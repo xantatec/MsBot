@@ -1,0 +1,9 @@
+﻿@using MsBot.Implementation.Template;
+@using MsBot.Vo.Events.Message;
+@if(Model.RawMessage.StartsWith(BotConfig.BotName))
+{
+    if (Model.RawMessage.Contains("逆推"))
+    {
+        Partial("_Groups/_Part_NiTui");
+    }
+}

@@ -1,0 +1,123 @@
+﻿@using MsBot.Implementation.Template;
+@using MsBot.Vo.Events.Message;
+@using System.Text.RegularExpressions;
+@using MsBot.Infrastructure;
+@inherits MsBotRazorTemplate<GroupMsgReqVo>
+
+@functions {
+    public class UnStarRequest
+    {
+        public int level { get; set; }
+        public int old_att { get; set; }
+        public int att { get; set; }
+        public int old_pro { get; set; }
+        public int pro { get; set; }
+        public int star { get; set; }
+        public int count { get; set; }
+    }
+
+    public class UnStar
+    {
+        public string msg { get; set; }
+        public string next_url { get; set; }
+        public int code { get; set; }
+        public UnStarData data { get; set; }
+    }
+
+    public class UnStarData
+    {
+        public string pro { get; set; }
+        public string maybe { get; set; }
+    }
+
+    private GroupMsgRspVo GetResult()
+    {
+        //150级 16x 主4-32 攻4-32 10次
+        var rawMsg = Model.RawMessage;
+        int star = 0, oldAtt = 0, att = 0, oldPro = 0, pro = 0, count = 0, level = 0;
+        var result = new GroupMsgRspVo
+            {
+                AtSender = true
+            };
+        var regEx = new Regex("(\\d+)[星xX]");
+        var matcher = regEx.Match(rawMsg);
+        if (matcher.Success)
+            star = Convert.ToInt32(matcher.Groups[1].Value);
+        else
+        {
+            result.Reply = "宁倒是告诉我多少星呀，[多少级] 主[原主属性]-[现在多少主属性] 攻[原攻击力]-[现在多少攻击力] [几次升级]  \r\neg：150级 16x 主4-32 攻4-32 10次";
+            return result;
+        }
+        regEx = new Regex("(\\d+)级");
+        matcher = regEx.Match(rawMsg);
+        if (matcher.Success)
+            level = Convert.ToInt32(matcher.Groups[1].Value);
+        else
+        {
+            result.Reply = "宁倒是告诉我多少级呀，[多少级] 主[原主属性]-[现在多少主属性] 攻[原攻击力]-[现在多少攻击力] [几次升级]  \r\neg：150级 16x 主4-32 攻4-32 10次";
+            return result;
+        }
+
+        regEx = new Regex("主(\\d+)-(\\d+)");
+        matcher = regEx.Match(rawMsg);
+        if (matcher.Success)
+        {
+            oldPro = Convert.ToInt32(matcher.Groups[1].Value);
+            pro = Convert.ToInt32(matcher.Groups[2].Value);
+        }
+        else
+        {
+            result.Reply = "宁倒是告诉我多少原主属性，现在多少主属性呀，[多少级] 主[原主属性]-[现在多少主属性] 攻[原攻击力]-[现在多少攻击力] [几次升级]  \r\neg：150级 16x 主4-32 攻4-32 10次";
+            return result;
+        }
+
+        regEx = new Regex("攻(\\d+)-(\\d+)");
+        matcher = regEx.Match(rawMsg);
+        if (matcher.Success)
+        {
+            oldAtt = Convert.ToInt32(matcher.Groups[1].Value);
+            att = Convert.ToInt32(matcher.Groups[2].Value);
+        }
+        else
+        {
+            result.Reply = "宁倒是告诉我多少原攻击力，现在多少攻击力呀，[多少级] 主[原主属性]-[现在多少主属性] 攻[原攻击力]-[现在多少攻击力] [几次升级]  \r\neg：150级 16x 主4-32 攻4-32 10次";
+            return result;
+        }
+
+        regEx = new Regex("(\\d+)次");
+        matcher = regEx.Match(rawMsg);
+        if (matcher.Success)
+        {
+            count = Convert.ToInt32(matcher.Groups[1].Value);
+        }
+        else
+        {
+            result.Reply = "宁倒是告诉我升级了多少次呀，[多少级] 主[原主属性]-[现在多少主属性] 攻[原攻击力]-[现在多少攻击力] [几次升级]  \r\neg：150级 16x 主4-32 攻4-32 10次";
+            return result;
+        }
+
+        UnStarRequest usr = new UnStarRequest();
+        usr.level = level;
+        usr.att = att;
+        usr.pro = pro;
+        usr.old_att = oldAtt;
+        usr.old_pro = oldPro;
+        usr.count = count;
+        usr.star = star;
+        try
+        {
+            var r = SerializerHelper.Instance.JsonSerialize(usr);
+            var usrResult = RequestHelper.Instance.WebRequest("https://mxd.411er.cn/api/v1/mxd/weapon/un-star", "POST", null, parameter: r);
+            var us = SerializerHelper.Instance.JsonDeserialize<UnStar>(usrResult);
+
+            result.Reply = us.data.pro + "\r\n" + us.data.maybe;
+            return result;
+        }
+        catch (Exception ex)
+        {
+            result.Reply = "头哥，出bug了:" + ex.Message;
+            return result;
+        }
+    }
+}
+@GetResult();

@@ -3,7 +3,48 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MsBot.Vo", "MsBot.Vo\MsBot.Vo.csproj", "{339F569B-BCD7-4592-854F-F6EF142F25AD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F51F7008-DBF4-42BD-8984-B1C9DF830EF6}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MsBot.Implementation", "MsBot.Implementation\MsBot.Implementation.csproj", "{0655242E-65F2-44A5-AC20-2FAA9C66A1E1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MsBot.Web", "MsBot.Web\MsBot.Web.csproj", "{9F7D3632-430E-473D-89AC-D915C59F11A8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MsBot.Domain", "MsBot.Domain\MsBot.Domain.csproj", "{D185D034-70B5-4332-8265-4BFADBDCC18C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MsBot.Infrastructure", "MsBot.Infrastructure\MsBot.Infrastructure.csproj", "{844B1DF7-46ED-4A54-A0DA-DD370E4850D6}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{339F569B-BCD7-4592-854F-F6EF142F25AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{339F569B-BCD7-4592-854F-F6EF142F25AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{339F569B-BCD7-4592-854F-F6EF142F25AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{339F569B-BCD7-4592-854F-F6EF142F25AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0655242E-65F2-44A5-AC20-2FAA9C66A1E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0655242E-65F2-44A5-AC20-2FAA9C66A1E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0655242E-65F2-44A5-AC20-2FAA9C66A1E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0655242E-65F2-44A5-AC20-2FAA9C66A1E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F7D3632-430E-473D-89AC-D915C59F11A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F7D3632-430E-473D-89AC-D915C59F11A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F7D3632-430E-473D-89AC-D915C59F11A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F7D3632-430E-473D-89AC-D915C59F11A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D185D034-70B5-4332-8265-4BFADBDCC18C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D185D034-70B5-4332-8265-4BFADBDCC18C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D185D034-70B5-4332-8265-4BFADBDCC18C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D185D034-70B5-4332-8265-4BFADBDCC18C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{844B1DF7-46ED-4A54-A0DA-DD370E4850D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{844B1DF7-46ED-4A54-A0DA-DD370E4850D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{844B1DF7-46ED-4A54-A0DA-DD370E4850D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{844B1DF7-46ED-4A54-A0DA-DD370E4850D6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
