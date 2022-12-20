@@ -3,24 +3,15 @@ using MsBot.Implementation.Configuration;
 using MsBot.Implementation.Event;
 using MsBot.Implementation.Event.Actions;
 using MsBot.Implementation.Template;
-using RazorEngine.Configuration;
-using RazorEngine.Templating;
-using RazorEngine.Text;
+using MsBot.Implementation.Template.Razor;
+using MsBot.Vo.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
-var razorCfg = new TemplateServiceConfiguration
-{
-    Language = RazorEngine.Language.CSharp,
-    EncodedStringFactory = new RawStringFactory(),
-    BaseTemplateType = typeof(MsBotRazorTemplate<>)
-};
-var razorSvc = RazorEngineService.Create(razorCfg);
 
-builder.Services.AddSingleton(razorSvc);
 
 builder.Services.AddTransient<MessageEventAction>();
 builder.Services.AddTransient<MetaEventAction>();
@@ -30,7 +21,12 @@ builder.Services.AddTransient<IMsBotEventHandler, MsBotEventHandler>();
 
 var config = builder.Configuration.GetSection("MsBot").Get<MsBotConfig>();
 builder.Services.AddSingleton(config);
+var engine = new RazorLightEngineBuilder()
+    .UseFileSystemProject(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates"))
+    .UseMemoryCachingProvider()
+    .Build();
 
+builder.Services.AddSingleton(engine);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

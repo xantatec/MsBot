@@ -1,4 +1,5 @@
-﻿using NVelocity;
+﻿using MsBot.Infrastructure;
+using NVelocity;
 using NVelocity.App;
 using NVelocity.Runtime;
 using System.Collections;
@@ -57,13 +58,12 @@ namespace MsBot.Implementation.Template
                 if (_context != null)
                     return _context;
                 _context = new VelocityContext();
-                //#region Helpers
-                //_context.Put("DbHelper", new DbHelper());
-                //_context.Put("QldRequest", new QldRequest());
-                //_context.Put("Utils", new Utils());
-                //_context.Put("Header", new Header());
-                //_context.Put("Label", new Label());
-                //#endregion
+
+                #region Helpers
+                _context.Put("ObjectHelper", ObjectHelper.Instance);
+                _context.Put("RequestHelper", RequestHelper.Instance);
+                _context.Put("SerializerHelper", SerializerHelper.Instance);
+                #endregion
                 return _context;
             }
         }

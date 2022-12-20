@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Templates\**" />
+    <Content Remove="Templates\**" />
+    <EmbeddedResource Remove="Templates\**" />
+    <None Remove="Templates\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.1">
       <PrivateAssets>all</PrivateAssets>
@@ -18,7 +25,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="MySql.EntityFrameworkCore" Version="6.0.7" />
-    <PackageReference Include="RazorEngine.NetCore" Version="3.1.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,15 +32,6 @@
     <ProjectReference Include="..\MsBot.Implementation\MsBot.Implementation.csproj" />
     <ProjectReference Include="..\MsBot.Infrastructure\MsBot.Infrastructure.csproj" />
     <ProjectReference Include="..\MsBot.Vo\MsBot.Vo.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Update="Templates\Razor\Message\GroupMsg.cshtml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Templates\Razor\Message\_Groups\_Part_NiTui.cshtml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
 </Project>

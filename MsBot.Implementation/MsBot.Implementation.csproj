@@ -22,12 +22,15 @@
     <PackageReference Include="MySql.EntityFrameworkCore" Version="6.0.7" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="NVelocity" Version="1.2.0" />
-    <PackageReference Include="RazorEngine.NetCore" Version="3.1.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\MsBot.Domain\MsBot.Domain.csproj" />
     <ProjectReference Include="..\MsBot.Vo\MsBot.Vo.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Template\Razor\CodeGenerators\" />
   </ItemGroup>
 
 </Project>

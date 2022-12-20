@@ -1,14 +1,13 @@
 ﻿using MsBot.Implementation.Configuration;
 using MsBot.Vo.Events.Message;
 using Newtonsoft.Json.Linq;
-using RazorEngine.Templating;
 
 namespace MsBot.Implementation.Event.Actions;
 
 public class MessageEventAction : EventAction
 {
-    public MessageEventAction(MsBotConfig botConfig, IRazorEngineService razorEngine)
-        : base(botConfig, razorEngine)
+    public MessageEventAction(MsBotConfig botConfig)
+        : base(botConfig)
     {
     }
 

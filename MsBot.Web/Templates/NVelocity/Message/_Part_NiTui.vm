@@ -1,0 +1,7 @@
+﻿#if($Request.RawMessage.StartsWith($BotConfig.BotName))
+{
+    #if ($Request.RawMessage.Contains("逆推"))
+    {
+        #parse()
+    }
+}

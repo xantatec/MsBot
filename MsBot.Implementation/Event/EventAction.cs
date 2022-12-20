@@ -1,23 +1,22 @@
 ﻿using MsBot.Implementation.Configuration;
 using MsBot.Implementation.Template;
+using MsBot.Implementation.Template.Razor;
 using MsBot.Vo.Events;
 using Newtonsoft.Json.Linq;
-using RazorEngine.Templating;
 using System.Collections;
 
 namespace MsBot.Implementation.Event;
 
 public abstract class EventAction
 {
-    private readonly IRazorEngineService _razorEngine;
-
     public abstract string PostType { get; }
     public MsBotConfig BotConfig { get; }
+    protected IRazorLightEngine Engine { get; }
 
-    protected EventAction(MsBotConfig botConfig, IRazorEngineService razorEngine)
+    protected EventAction(MsBotConfig botConfig, IRazorLightEngine engine)
     {
         BotConfig = botConfig;
-        _razorEngine = razorEngine;
+        Engine = engine;
     }
 
     protected string Render<TRequest>(JObject reqObj)
@@ -27,26 +26,21 @@ public abstract class EventAction
         if (request == null)
             return string.Empty;
 
-        var folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", BotConfig.RenderEngine, PostType);
+        var filePath = $"Templates/{BotConfig.RenderEngine}/{PostType}/{request.Template}.cshtml";
 
         if (BotConfig.RenderEngine == "Razor")
         {
-            var templatePath = Path.Combine(folderPath, request.Template + ".cshtml");
-            var fi = new FileInfo(templatePath);
-            if (!fi.Exists)
-                throw new Exception("模板文件不存在");
-
-            using var fs = new FileStream(templatePath, FileMode.Open, FileAccess.Read);
-            using var rds = new StreamReader(fs);
-            var contents = rds.ReadToEnd();
-
-            return _razorEngine.RunCompile(new LoadedTemplateSource(contents, templatePath), templatePath, typeof(TRequest), request, null);
+            return Engine.CompileRenderAsync(filePath, request).Result;
         }
         else if (BotConfig.RenderEngine == "NVelocity")
         {
-            var templatePath = Path.Combine(folderPath, request.Template + ".vm");
-            var engine = NVelocityEngine.Create();
-            return engine.AccessTemplate(templatePath, new Hashtable { });
+            var engine = NVelocityEngine.Create(filePath);
+            var templatePath = Path.Combine(filePath, request.Template + ".vm");
+            return engine.AccessTemplate(templatePath, new Hashtable
+            {
+                { "Request", request },
+                { "BotConfig", BotConfig }
+            });
         }
         else
             throw new Exception("不受支持的模板引擎");

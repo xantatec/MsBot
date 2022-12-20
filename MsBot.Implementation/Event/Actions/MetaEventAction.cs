@@ -1,14 +1,13 @@
 ﻿using MsBot.Implementation.Configuration;
 using MsBot.Vo.Events.MetaEvent;
 using Newtonsoft.Json.Linq;
-using RazorEngine.Templating;
 
 namespace MsBot.Implementation.Event.Actions;
 
 public class MetaEventAction : EventAction
 {
-    public MetaEventAction(MsBotConfig botConfig, IRazorEngineService razorEngine)
-        : base(botConfig, razorEngine)
+    public MetaEventAction(MsBotConfig botConfig)
+        : base(botConfig)
     {
     }
 
