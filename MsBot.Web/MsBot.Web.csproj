@@ -7,10 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Templates\**" />
-    <Content Remove="Templates\**" />
-    <EmbeddedResource Remove="Templates\**" />
-    <None Remove="Templates\**" />
+    <None Include="Templates\Razor\Message\GroupMsg.cshtml" />
+    <None Include="Templates\Razor\Message\_Groups\_Part_NiTui.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
