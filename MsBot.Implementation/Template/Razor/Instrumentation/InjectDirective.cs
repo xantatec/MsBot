@@ -75,7 +75,7 @@ public class InjectDirective
 
     internal class InjectTargetExtension : IInjectTargetExtension
     {
-        private const string RazorInjectAttribute = "[global::RazorLight.Internal.RazorInjectAttribute]";
+        private const string RazorInjectAttribute = "[global::MsBot.Implementation.Template.Razor.Internal.RazorInjectAttribute]";
 
         public void WriteInjectProperty(CodeRenderingContext context, InjectIntermediateNode node)
         {

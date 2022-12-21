@@ -1,0 +1,20 @@
+﻿@inherits TemplatePage<MsBotModel<GroupMsgReqVo>>
+@using MsBot.Implementation.Template;
+@using MsBot.Implementation.Template.Razor;
+@using MsBot.Vo.Events.Message;
+@{
+    var request = Model.Request;
+    var config = Model.Config;
+}
+@if (request.RawMessage.StartsWith(config.BotName))
+{
+    if (request.RawMessage.Contains("逆推"))
+    {
+        await IncludeAsync("Message/_Groups/_Part_NiTui", Model);
+    }
+
+    if (request.RawMessage.ToLower().Contains("roll"))
+    {
+        await IncludeAsync("Message/_Groups/_Part_RollDian", Model);
+    }
+}

@@ -21,10 +21,10 @@ public class RazorLightTemplateDocumentClassifierPass : DocumentClassifierPassBa
 
         base.OnDocumentStructureCreated(codeDocument, @namespace, @class, method);
 
-        @namespace.Content = "RazorLight.CompiledTemplates";
+        @namespace.Content = "MsBot.Implementation.Template.Razor.CompiledTemplates";
 
         @class.ClassName = "GeneratedTemplate"; //CSharpIdentifier.GetClassNameFromPath(templateKey);
-        @class.BaseType = "global::RazorLight.TemplatePage<TModel>";
+        @class.BaseType = "global::MsBot.Implementation.Template.Razor.TemplatePage<TModel>";
         @class.Modifiers.Clear();
         @class.Modifiers.Add("public");
 

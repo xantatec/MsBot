@@ -1,4 +1,7 @@
-﻿namespace MsBot.Implementation.Template.Razor;
+﻿using MsBot.Implementation.Template.Razor.Text;
+using MsBot.Infrastructure;
+
+namespace MsBot.Implementation.Template.Razor;
 
 /// <summary>
 /// Represents the properties and methods that are needed in order to render a template that uses Razor syntax.
@@ -14,5 +17,10 @@ public abstract class TemplatePage<TModel> : TemplatePage
     public override void SetModel(object model)
     {
         Model = (TModel)model;
+    }
+
+    public IRawString SetResult(object result)
+    {
+        return Raw(SerializerHelper.Instance.JsonSerialize(result));
     }
 }

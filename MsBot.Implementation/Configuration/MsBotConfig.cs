@@ -25,10 +25,15 @@ public class MsBotConfig
     /// <summary>
     /// 机器人管理员
     /// </summary>
-    public string[] BotMaster { get; set; }
+    public List<string> BotMaster { get; set; }
 
     /// <summary>
     /// 机器人渲染引擎
     /// </summary>
     public string RenderEngine { get; set; }    
+
+    /// <summary>
+    /// 链接字符串
+    /// </summary>
+    public string ConnectionString { get; set; }
 }

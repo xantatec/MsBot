@@ -25,7 +25,7 @@ internal class OverrideRuntimeNodeWriterTemplateTypeNamePhase : RazorEnginePhase
 
         // This phase needs to run just before DefaultRazorCSharpLoweringPhase
         var phaseIndex = builder.Phases.IndexOf(defaultRazorCSharpLoweringPhase);
-        builder.Phases.Insert(phaseIndex, new OverrideRuntimeNodeWriterTemplateTypeNamePhase("global::RazorLight.Razor.RazorLightHelperResult"));
+        builder.Phases.Insert(phaseIndex, new OverrideRuntimeNodeWriterTemplateTypeNamePhase("global::MsBot.Implementation.Template.Razor.Razor.RazorLightHelperResult"));
     }
 
     private readonly string _templateTypeName;

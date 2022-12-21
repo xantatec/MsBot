@@ -6,7 +6,7 @@ namespace MsBot.Implementation.Template.Razor.Instrumentation;
 
 public class RazorLightAssemblyAttributeInjectionPass : IntermediateNodePassBase, IRazorOptimizationPass
 {
-    private const string RazorLightTemplateAttribute = "global::RazorLight.Razor.RazorLightTemplateAttribute";
+    private const string RazorLightTemplateAttribute = "global::MsBot.Implementation.Template.Razor.Razor.RazorLightTemplateAttribute";
 
     protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
     {

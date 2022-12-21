@@ -2,5 +2,5 @@
 
 public interface IMsBotEventHandler
 {
-    void Handle(string requestStr);
+    string Handle(string requestStr);
 }

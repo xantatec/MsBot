@@ -18,19 +18,19 @@ public class MsBotEventHandler : IMsBotEventHandler
         _metaEventAction = metaEventAction;
     }
 
-    public void Handle(string requestStr)
+    public string Handle(string requestStr)
     {
         if (string.IsNullOrEmpty(requestStr))
-            return;
+            return string.Empty;
 
         var reqObj = JObject.Parse(requestStr);
 
         if (reqObj == null)
-            return;
+            return string.Empty;
 
         var postTypeObj = reqObj["post_type"];
         if (postTypeObj == null)
-            return;
+            return string.Empty;
 
         var postType = postTypeObj.ToString();
 
@@ -55,9 +55,8 @@ public class MsBotEventHandler : IMsBotEventHandler
                 break;
 
             default:
-                return;
+                return string.Empty;
         }
-
-        Console.WriteLine($"[{postType}]OUTPUT：{result}");
+        return result;
     }
 }

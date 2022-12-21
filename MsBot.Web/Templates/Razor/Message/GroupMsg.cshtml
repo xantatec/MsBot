@@ -1,9 +1,30 @@
-﻿@*@using MsBot.Implementation.Template;
+﻿@inherits TemplatePage<MsBotModel<GroupMsgReqVo>>
+@using MsBot.Implementation.Template;
+@using MsBot.Implementation.Template.Razor;
 @using MsBot.Vo.Events.Message;
-@if(Model.RawMessage.StartsWith(BotConfig.BotName))
+@{
+    var request = Model.Request;
+    var config = Model.Config;
+    var rawMsg = request.RawMessage;
+}
+@if (rawMsg.StartsWith(config.BotName))
 {
-    if (Model.RawMessage.Contains("逆推"))
+    if (rawMsg.Contains("逆推"))
     {
-        Partial("_Groups/_Part_NiTui");
+        await IncludeAsync("Message/_Groups/_Part_NiTui", Model);
     }
-}*@
+
+    if (rawMsg.ToLower().Contains("roll"))
+    {
+        await IncludeAsync("Message/_Groups/_Part_RollDian", Model);
+    }
+
+    if (
+        (rawMsg.StartsWith(config.BotName + "查询") || rawMsg.StartsWith(config.BotName + " 查询"))
+        &&
+        config.BotMaster.Contains(request.UserId.ToString())
+    )
+    {
+        await IncludeAsync("Message/_Groups/_Part_SearchQuestion", Model);
+    }
+}

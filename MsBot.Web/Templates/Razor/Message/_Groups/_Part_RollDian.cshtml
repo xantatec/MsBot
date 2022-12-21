@@ -1,0 +1,34 @@
+﻿@using MsBot.Implementation.Template.Razor;
+@using MsBot.Infrastructure;
+@using MsBot.Vo.Events.Message;
+@using System.Text.RegularExpressions;
+@inherits TemplatePage<MsBotModel<GroupMsgReqVo>>
+@functions {
+    private GroupMsgRspVo GetResult()
+    {
+        int min = -1;
+        int max = -1;
+        var regEx = new Regex("(\\d+)[\\-|到](\\d+)");
+        var matcher = regEx.Match(Model.Request.RawMessage);
+        if (matcher.Success)
+        {
+            min = Convert.ToInt32(matcher.Groups[1].Value);
+            max = Convert.ToInt32(matcher.Groups[2].Value);
+        }
+
+        if (min == -1 || max == -1)
+        {
+            min = 1;
+            max = 100;
+        }
+
+        int rd = RandomHelper.Instance.RandomInt(min, max);
+        var result = new GroupMsgRspVo
+            {
+                AtSender = true,
+                Reply = "  " + rd
+            };
+        return result;
+    }
+}
+@SetResult(GetResult())

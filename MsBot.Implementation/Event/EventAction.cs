@@ -11,9 +11,9 @@ public abstract class EventAction
 {
     public abstract string PostType { get; }
     public MsBotConfig BotConfig { get; }
-    protected IRazorLightEngine Engine { get; }
+    protected RazorLightEngine Engine { get; }
 
-    protected EventAction(MsBotConfig botConfig, IRazorLightEngine engine)
+    protected EventAction(MsBotConfig botConfig, RazorLightEngine engine)
     {
         BotConfig = botConfig;
         Engine = engine;
@@ -26,11 +26,16 @@ public abstract class EventAction
         if (request == null)
             return string.Empty;
 
-        var filePath = $"Templates/{BotConfig.RenderEngine}/{PostType}/{request.Template}.cshtml";
+        var filePath = $"{PostType}/{request.Template}";
 
         if (BotConfig.RenderEngine == "Razor")
         {
-            return Engine.CompileRenderAsync(filePath, request).Result;
+            var model = new MsBotModel<TRequest>
+            {
+                Request = request,
+                Config = BotConfig
+            };
+            return Engine.CompileRenderAsync(filePath, model).Result;
         }
         else if (BotConfig.RenderEngine == "NVelocity")
         {

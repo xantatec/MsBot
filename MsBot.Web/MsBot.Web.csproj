@@ -1,35 +1,58 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<PreserveCompilationContext>true</PreserveCompilationContext>
+		<MvcRazorCompileOnPublish>false</MvcRazorCompileOnPublish>
+		<MvcRazorExcludeRefAssembliesFromPublish>false</MvcRazorExcludeRefAssembliesFromPublish>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Include="Templates\Razor\Message\GroupMsg.cshtml" />
-    <None Include="Templates\Razor\Message\_Groups\_Part_NiTui.cshtml" />
-  </ItemGroup>
+	<ItemGroup>
+	  <Content Remove="Templates\Razor\Message\_Groups\T.cshtml" />
+	  <Content Remove="Templates\Razor\Message\_Groups\_Part_RollDian.cshtml" />
+	  <Content Remove="Templates\Razor\Message\_Groups\_Part_SearchQuestion.cshtml" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="MySql.EntityFrameworkCore" Version="6.0.7" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="Templates\Razor\Message\GroupMsg.cshtml">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="Templates\Razor\Message\_Groups\_Part_SearchQuestion.cshtml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="Templates\Razor\Message\_Groups\T.cshtml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="Templates\Razor\Message\_Groups\_Part_RollDian.cshtml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="Templates\Razor\Message\_Groups\_Part_NiTui.cshtml">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\MsBot.Domain\MsBot.Domain.csproj" />
-    <ProjectReference Include="..\MsBot.Implementation\MsBot.Implementation.csproj" />
-    <ProjectReference Include="..\MsBot.Infrastructure\MsBot.Infrastructure.csproj" />
-    <ProjectReference Include="..\MsBot.Vo\MsBot.Vo.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Dapper" Version="2.0.123" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="MySql.EntityFrameworkCore" Version="6.0.7" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\MsBot.Domain\MsBot.Domain.csproj" />
+		<ProjectReference Include="..\MsBot.Implementation\MsBot.Implementation.csproj" />
+		<ProjectReference Include="..\MsBot.Infrastructure\MsBot.Infrastructure.csproj" />
+		<ProjectReference Include="..\MsBot.Vo\MsBot.Vo.csproj" />
+	</ItemGroup>
 
 </Project>

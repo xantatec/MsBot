@@ -35,7 +35,7 @@ internal sealed class DefaultRazorEngine
 
                builder.AddTargetExtension(new TemplateTargetExtension
                {
-                   TemplateTypeName = "global::RazorLight.Razor.RazorLightHelperResult",
+                   TemplateTypeName = "global::MsBot.Implementation.Template.Razor.Razor.RazorLightHelperResult",
                });
 
                OverrideRuntimeNodeWriterTemplateTypeNamePhase.Register(builder);

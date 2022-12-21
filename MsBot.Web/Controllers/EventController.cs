@@ -18,7 +18,7 @@ namespace MsBot.Web.Controllers
         }
 
         [HttpPost]
-        public string Handle()
+        public IActionResult Handle()
         {
             var strData = "";
             using (var sr = new StreamReader(Request.Body, Encoding.Default))
@@ -26,9 +26,16 @@ namespace MsBot.Web.Controllers
                 strData = sr.ReadToEndAsync().Result;
             }
 
-            _botEventHandler.Handle(strData);
-
-            return "";
+            var result = _botEventHandler.Handle(strData);
+            if (!string.IsNullOrEmpty(result))
+            {
+                result = result.Trim();
+                if (result.StartsWith("{"))
+                    return Content(result, "application/json");
+                else
+                    return Content(result);
+            }
+            return Content("");
         }
     }
 }

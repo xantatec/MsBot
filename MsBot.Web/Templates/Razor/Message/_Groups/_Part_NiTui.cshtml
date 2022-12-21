@@ -1,9 +1,9 @@
-﻿@using MsBot.Implementation.Template;
+﻿@inherits TemplatePage<MsBotModel<GroupMsgReqVo>>
+@using MsBot.Implementation.Template;
+@using MsBot.Implementation.Template.Razor;
 @using MsBot.Vo.Events.Message;
 @using System.Text.RegularExpressions;
 @using MsBot.Infrastructure;
-@inherits MsBotRazorTemplate<GroupMsgReqVo>
-
 @functions {
     public class UnStarRequest
     {
@@ -33,12 +33,12 @@
     private GroupMsgRspVo GetResult()
     {
         //150级 16x 主4-32 攻4-32 10次
-        var rawMsg = Model.RawMessage;
+        var rawMsg = Model.Request.RawMessage;
         int star = 0, oldAtt = 0, att = 0, oldPro = 0, pro = 0, count = 0, level = 0;
         var result = new GroupMsgRspVo
-            {
-                AtSender = true
-            };
+        {
+            AtSender = true
+        };
         var regEx = new Regex("(\\d+)[星xX]");
         var matcher = regEx.Match(rawMsg);
         if (matcher.Success)
@@ -120,4 +120,4 @@
         }
     }
 }
-@GetResult();
+@SetResult(GetResult())

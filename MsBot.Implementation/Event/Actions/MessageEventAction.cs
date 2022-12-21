@@ -1,4 +1,5 @@
 ﻿using MsBot.Implementation.Configuration;
+using MsBot.Implementation.Template.Razor;
 using MsBot.Vo.Events.Message;
 using Newtonsoft.Json.Linq;
 
@@ -6,8 +7,8 @@ namespace MsBot.Implementation.Event.Actions;
 
 public class MessageEventAction : EventAction
 {
-    public MessageEventAction(MsBotConfig botConfig)
-        : base(botConfig)
+    public MessageEventAction(MsBotConfig botConfig, RazorLightEngine engine)
+        : base(botConfig, engine)
     {
     }
 

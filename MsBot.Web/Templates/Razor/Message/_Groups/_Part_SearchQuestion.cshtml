@@ -1,0 +1,56 @@
+﻿@using MsBot.Implementation.MySql;
+@using MsBot.Implementation.Template;
+@using MsBot.Implementation.Template.Razor;
+@using MsBot.Vo.Events.Message;
+@using Dapper;
+@inherits TemplatePage<MsBotModel<GroupMsgReqVo>>
+
+@functions {
+    public class Msg
+    {
+        public long Id { get; set; }
+
+        public string Answer { get; set; }
+
+        public string Question { get; set; }
+
+        public string CreateId { get; set; }
+
+        public string Link { get; set; }
+    }
+
+    private GroupMsgRspVo GetResult()
+    {
+        var rawMsg = Model.Request.RawMessage;
+        var index = rawMsg.IndexOf("查询");
+        var question = rawMsg.Substring(index + 2).Trim();
+        using (var conn = DbHelper.Instance.GetConnection(Model.Config.ConnectionString))
+        {
+            var list = conn.Query<Msg>("SELECT * FROM msg WHERE question LIKE CONCAT('%', @Quetion, '%')", new { Quetion = question }).ToList();
+            if (!list.Any())
+                return new GroupMsgRspVo { AtSender = true, Reply = "查询结果为空" };
+            else
+            {
+                var resultMsg = "";// new GroupMsgRspVo { AtSender = true, Reply = "" };
+                foreach (var item in list)
+                {
+                    resultMsg += "ID："+item.Id+" 问题："+ item.Question + " 回答：";
+                    if (item.Answer.Contains("[CQ:record"))
+                    {
+                        resultMsg += item.Answer.Replace("[CQ:record,file", "[voice") + item.Link + Environment.NewLine;
+                    }
+                    else
+                    {
+                        resultMsg += item.Answer;
+                        if (!string.IsNullOrEmpty(item.Link))
+                            resultMsg += "|" + item.Link;
+
+                        resultMsg += Environment.NewLine;
+                    }
+                }
+                return new GroupMsgRspVo { AtSender = true, Reply = resultMsg };
+            }
+        }
+    }
+}
+@SetResult(GetResult())
