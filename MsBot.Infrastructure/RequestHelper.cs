@@ -181,4 +181,52 @@ public class RequestHelper
         var queryString = string.Join("&", parameterList);
         return url.Contains('?') ? url + "&" + queryString : url + "?" + queryString;
     }
+
+    /// <summary>
+    /// 下载文件
+    /// </summary>
+    /// <param name="url">下载地址</param>
+    /// <param name="savePath">保存路径</param>
+    /// <param name="fileName">文件名</param>
+    public void DownloadFile(string url, string savePath, string fileName)
+    {
+        if (string.IsNullOrEmpty(url))
+            return;
+
+        HttpWebRequest req = null;
+        HttpWebResponse rsp = null;
+        try
+        {
+            req = (HttpWebRequest)System.Net.WebRequest.Create(url);
+            req.Method = "GET";
+            req.AllowAutoRedirect = false;
+            rsp = (HttpWebResponse)req.GetResponse();
+            var responseStream = rsp.GetResponseStream();
+            if (responseStream == null)
+                throw new InvalidOperationException();
+
+            if (!Directory.Exists(savePath))
+                Directory.CreateDirectory(savePath);
+
+            var newFileName = Path.Combine(savePath, fileName);
+
+            using (var fs = new FileStream(newFileName, FileMode.Create, FileAccess.Write))
+            {
+                responseStream.CopyTo(fs);
+            }
+
+            responseStream.Close();
+            req.Abort();
+            rsp.Close();
+        }
+        catch (Exception ex)
+        {
+            if (req != null)
+                req.Abort();
+            if (rsp != null)
+                rsp.Close();
+        }
+
+        return null;
+    }
 }

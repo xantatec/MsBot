@@ -11,13 +11,33 @@
 
 	<ItemGroup>
 	  <Content Remove="Templates\Razor\Message\_Groups\T.cshtml" />
+	  <Content Remove="Templates\Razor\Message\_Groups\_Part_DeleteQuestion.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_RollDian.cshtml" />
+	  <Content Remove="Templates\Razor\Message\_Groups\_Part_SearchMob.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_SearchQuestion.cshtml" />
+	  <Content Remove="Templates\Razor\Message\_Groups\_Part_Study_Bool.cshtml" />
+	  <Content Remove="Templates\Razor\Message\_Groups\_Part_Study_Normal.cshtml" />
+	  <Content Remove="Templates\Razor\Message\_Groups\_Part_Study_Regex.cshtml" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<None Include="Templates\Razor\Message\GroupMsg.cshtml">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="Templates\Razor\Message\_Groups\_Part_DeleteQuestion.cshtml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="Templates\Razor\Message\_Groups\_Part_SearchMob.cshtml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="Templates\Razor\Message\_Groups\_Part_Study_Normal.cshtml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="Templates\Razor\Message\_Groups\_Part_Study_Regex.cshtml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="Templates\Razor\Message\_Groups\_Part_Study_Bool.cshtml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Include="Templates\Razor\Message\_Groups\_Part_SearchQuestion.cshtml">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>

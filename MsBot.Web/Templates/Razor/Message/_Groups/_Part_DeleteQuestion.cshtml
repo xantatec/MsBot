@@ -1,0 +1,56 @@
+﻿@inherits TemplatePage<MsBotModel<GroupMsgReqVo>>
+@using MsBot.Implementation.MySql;
+@using MsBot.Implementation.Template;
+@using MsBot.Implementation.Template.Razor;
+@using MsBot.Vo.Events.Message;
+@using Dapper;
+@functions {
+    public class Msg
+    {
+        public long Id { get; set; }
+        public string Answer { get; set; }
+        public string Question { get; set; }
+        public string CreateId { get; set; }
+        public string Link { get; set; }
+    }
+    private GroupMsgRspVo GetResult()
+    {
+        var rawMsg = Model.Request.RawMessage;
+        var index = rawMsg.IndexOf("删除问题");
+        //select * from msg where id =
+        var id = 0l;
+        if(!long.TryParse(rawMsg.Substring(index + 4), out id))
+        {
+            return new GroupMsgRspVo
+                {
+                    AtSender = true,
+                    Reply = "恁输入的这是个什么玩意，要ID你晓得伐？！"
+                };
+        }
+
+        using(var conn = DbHelper.Instance.GetConnection(Model.Config.ConnectionString))
+        {
+            var msg = conn.QueryFirstOrDefault<Msg>("SELECT id, answer, question, create_id AS CreateId, link FROM msg WHERE id=@Id", new
+            {
+                Id = id
+            });
+            if(msg == null)
+            {
+                return new GroupMsgRspVo
+                    {
+                        AtSender = true,
+                        Reply = "指定问题不存在"
+                    };
+            }
+            else
+            {
+                return new GroupMsgRspVo
+                    {
+                        AtSender = true,
+                        Reply = "删除成功，问题：" + msg.Question
+                    };
+            }
+        }
+    }
+}
+@SetResult(GetResult())

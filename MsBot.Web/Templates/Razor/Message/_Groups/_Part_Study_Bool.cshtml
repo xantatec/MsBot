@@ -1,0 +1,56 @@
+﻿@inherits TemplatePage<MsBotModel<GroupMsgReqVo>>
+@using MsBot.Implementation.Configuration;
+@using MsBot.Implementation.MySql;
+@using MsBot.Implementation.Template;
+@using MsBot.Implementation.Template.Razor;
+@using MsBot.Infrastructure;
+@using MsBot.Vo.Events.Message;
+@using Dapper;
+@functions {
+    private GroupMsgRspVo GetResult()
+    {
+        var request = Model.Request;
+        var rawMsg = request.RawMessage;
+        var qIndex = rawMsg.IndexOf("问");
+        var aIndex = rawMsg.IndexOf(" 答");
+        var theQuestion = rawMsg.Substring(qIndex + 1, aIndex - qIndex);
+        var answer = rawMsg;
+        while (answer.Contains("[CQ:image"))
+        {
+            var imgName = SaveImage(rawMsg);
+            imgName = "[CQ:image,file=save/" + imgName + "]";
+            var s = answer.IndexOf("[CQ:image,file");
+            var e = answer.IndexOf("]") + 1;
+            var imgCq = answer.Substring(s, e - s);
+            rawMsg = rawMsg.Replace(imgCq, imgName);
+            answer = answer.Replace(imgCq, "");
+        }
+
+        var ans = rawMsg.Substring(aIndex + 2);
+
+        using (var conn = DbHelper.Instance.GetConnection(Model.Config.ConnectionString))
+        {
+            conn.Execute("INSERT INTO msg_no_prefix(answer, question, exact)VALUES(@Answer, @Question, @Exact)", new
+            {
+                Answer = ans,
+                Question = theQuestion,
+                Exact = ""
+            });
+        }
+
+        return new GroupMsgRspVo { AtSender = false, Reply = "[CQ:image,file=img/record.gif]" };
+    }
+
+    private string SaveImage(string rawMsg)
+    {
+        var qIndex = rawMsg.IndexOf(",url=") + 5;
+        var aIndex = rawMsg.IndexOf("]");
+        var s = rawMsg.IndexOf("file=") + 5;
+        var e = rawMsg.IndexOf(",url=") - 6;
+        var imageName = rawMsg.Substring(s, e - s);
+        var imageUrl = rawMsg.Substring(qIndex, aIndex - qIndex);
+        RequestHelper.Instance.DownloadFile(imageUrl, Model.Config.ImageFolder, imageName);
+        return imageName;
+    }
+}
+@SetResult(GetResult())

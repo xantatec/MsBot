@@ -36,4 +36,9 @@ public class MsBotConfig
     /// 链接字符串
     /// </summary>
     public string ConnectionString { get; set; }
+
+    /// <summary>
+    /// 图片地址
+    /// </summary>
+    public string ImageFolder { get; set; }
 }
