@@ -1,0 +1,204 @@
+﻿@inherits TemplatePage<MsBotModel<GroupMsgReqVo>>
+@using MsBot.Implementation.API;
+@using MsBot.Implementation.MySql;
+@using MsBot.Implementation.Template;
+@using MsBot.Implementation.Template.Razor;
+@using MsBot.Vo.API;
+@using MsBot.Vo.Events.Message;
+@using Dapper;
+@using System.Drawing;
+@functions {
+    public class RoleDmg
+    {
+        public long id{ get; set; }
+        public string user_id { get; set; }
+        public string name { get; set; }
+        public string group_id { get; set; }
+        public int common_dmg { get; set; }
+        public int boss_dmg { get; set; }
+    }
+    private static double defAndign(double def, double ign)
+    {
+        double i = double.Parse((100 - (def - ign * def / 100)).ToString("0.00"));
+        if(i < 0)
+            i = 0;
+        if(i > 100)
+            i = 100;
+        return i;
+    }
+
+    public string ignImage(string ignDate)
+    {
+        string[] split = ignDate.Split("\r\n");
+        string sourceFilePath = Model.Config.ImageFolder+ "img/ign_background.jpg";
+        string uuid = Guid.NewGuid().ToString("N");
+        using (var bitMap = new Bitmap(sourceFilePath))
+        {
+            using (var g = Graphics.FromImage(bitMap))
+            {
+                using (var brush = new SolidBrush(Color.FromArgb(230, 230, 230)))
+                {
+                    int x1 = 65;
+                    int x2 = 382;
+                    int x3 = 687;
+                    int y1 = 70;
+                    int y2 = 288;
+                    var font = new Font("黑体", 16);
+                    g.DrawString("基本数据", font, brush, x1,y1);
+                    g.DrawString("超高防对比", font, brush, x1, y2);
+                    g.DrawString("高防对比", font, brush, x2, y2);
+                    g.DrawString("中防对比", font, brush, x3, y2);
+
+                    g.DrawString(split[0], font, brush,x1, y1+31);
+                    g.DrawString(split[1], font, brush,x1, y1+31*2);
+                    g.DrawString(split[2], font, brush,x1, y1+31*3);
+                    g.DrawString(split[3], font, brush,x1, y1+31*4);
+
+                    g.DrawString(split[5], font, brush,x1, y2+31);
+                    g.DrawString(split[6], font, brush,x1, y2+31*2);
+                    g.DrawString(split[7], font, brush,x1, y2+31*3);
+                    g.DrawString(split[8], font, brush,x1, y2+31*4);
+
+                    g.DrawString(split[10], font, brush,x2, y2+31);
+                    g.DrawString(split[11], font, brush,x2, y2+31*2);
+                    g.DrawString(split[12], font, brush,x2, y2+31*3);
+                    g.DrawString(split[13], font, brush,x2, y2+31*4);
+
+                    g.DrawString(split[15], font, brush,x3, y2+31);
+                    g.DrawString(split[16], font, brush,x3, y2+31*2);
+                    g.DrawString(split[17], font, brush,x3, y2+31*3);
+                    g.DrawString(split[18], font, brush,x3, y2+31*4);
+                }
+            }
+            String saveFilePath = Model.Config.ImageFolder + uuid + ".jpg";
+            bitMap.Save(saveFilePath, System.Drawing.Imaging.ImageFormat.Jpeg);
+        }
+
+        return "[CQ:image,file=" + uuid +".jpg]";
+    }
+
+    private GroupMsgRspVo GetResult()
+    {
+        var rawMsg = Model.Request.RawMessage;
+        var config = Model.Config;
+        var request = Model.Request;
+        //消息过滤
+        rawMsg = rawMsg.Replace("%", "");
+        rawMsg = rawMsg.Replace(config.BotName, "");
+        rawMsg = rawMsg.Replace(" ", "");
+        rawMsg = rawMsg.Replace("=", "");
+        rawMsg = rawMsg.Replace("无视", "");
+        double ign = 0;
+        double ign_before = 0;
+        double ign2 = 0;
+        double ign_before2 = 0;
+
+        var result = new GroupMsgRspVo
+            {
+                AtSender = true
+            };
+
+        if(rawMsg.Contains("+") && !rawMsg.Contains("-"))
+        {
+            String[] getInt = rawMsg.Split('+');
+            for(int i = 0; i < getInt.Length; i++)
+            {
+                if(i == 0)
+                {
+                    ign_before = double.Parse(getInt[i]);
+                    ign_before2 = ign_before + (100 - ign_before) * 20 / 100;
+                }
+
+                if(double.Parse(getInt[i]) > 100)
+                {
+                    result.Reply = "头哥，这逼捣乱！";
+                    return result;
+                }
+                ign = ign + (100 - ign) * double.Parse(getInt[i]) / 100;
+            }
+        }
+        else if(rawMsg.Contains("-") && !rawMsg.Contains("+"))
+        {
+            String[] getInt = rawMsg.Split('-');
+            for(int i = 0; i < getInt.Length; i++)
+            {
+                if(double.Parse(getInt[i]) > 100)
+                {
+                    result.Reply = "头哥，这逼捣乱！";
+                    return result;
+                }
+                if(i == 0)
+                {
+                    ign_before = double.Parse(getInt[i]);
+                    ign_before2 = ign_before + (100 - ign_before) * 20 / 100;
+                    ign = ign_before;
+                }
+                else
+                {
+                    ign = (ign - double.Parse(getInt[i])) / (100 - double.Parse(getInt[i])) * 100;
+                }
+            }
+        }
+        else
+        {
+            result.Reply = "又是加又是减，你可摇了我吧";
+            return result;
+        }
+
+        using(var conn = DbHelper.Instance.GetConnection(Model.Config.ConnectionString))
+        {
+            var sql = "SELECT * FROM role_dmg WHERE user_id = @UserId";
+            var roleDmg= conn.QueryFirstOrDefault<RoleDmg>(sql, new { UserId = request.Sender.UserId });
+            if (roleDmg == null)
+            {
+                roleDmg = new RoleDmg();
+                //设置群名片 如果没有 设置昵称
+                if(string.IsNullOrEmpty(request.Sender.Card))
+                    roleDmg.name = request.Sender.NickName;
+                else
+                    roleDmg.name = request.Sender.Card;
+
+                roleDmg.user_id = request.Sender.UserId.ToString();
+                roleDmg.group_id = request.GroupId.ToString();
+                roleDmg.common_dmg = 100;
+                roleDmg.boss_dmg = 200;
+
+                sql = @"INSERT INTO role_dmg(user_id, `name`, group_id, common_dmg, boss_dmg)
+VALUES(@user_id, @name, @group_id, @common_dmg, @boss_dmg)";
+
+                conn.Execute(sql, roleDmg);
+
+                APIHelper.Instance.SendGroupMsg(new GroupMsgVo
+                {
+                    GroupId=request.GroupId,
+                    Message = "[CQ:at,qq=" + request.Sender.UserId + "]" + "未查询到角色信息，默认伤害100,boss伤200。你可通过指令【" + config.BotName+ " 伤害50 boss300】命令修改角色信息"
+                });
+            }
+
+            ign2 = ign + (100 - ign) * 20 / 100;
+            String replyM = "你之前的无视：" + ign_before + "%(" + ign_before2 + "%)\r\n" + "计算后的无视：" + ign.ToString("0.##") + "%(" + ign2.ToString("0.##") + "%)\r\n";
+            replyM += "角色数据 伤害:" + roleDmg.common_dmg + "% boss:" + roleDmg.boss_dmg + "%\r\n(括号为核心20%无视加成结果)\r\n";
+            replyM += "//----超高防对比-----//\r\n";
+            replyM += "塞伦提升率（380超高防）：" + ((defAndign(380, ign) / defAndign(380, ign_before) - 1) * 100).ToString("0.##") + "%(" + ((defAndign(380, ign2) / defAndign(380, ign_before2) - 1) * 100).ToString("0.##") + "%)\r\n";
+            replyM += "原伤害" + defAndign(380, ign_before) + "%(" + defAndign(380, ign_before2) + "%)\r\n";
+            replyM += "现伤害" + defAndign(380, ign) + "%(" + defAndign(380, ign2) + "%)\r\n";
+            replyM += "相当于提升了" + ((defAndign(380, ign) / defAndign(380, ign_before) - 1) * (100 + roleDmg.common_dmg + roleDmg.boss_dmg)).ToString("0.##") + "%(" + ((defAndign(380, ign2) / defAndign(380, ign_before2) - 1) * (100 + roleDmg.common_dmg + roleDmg.boss_dmg)).ToString("0.##") + "%)点boss伤害\r\n";
+
+            replyM += "//-----高防对比-----//\r\n";
+            replyM += "斯乌提升率（300高防）：" + ((defAndign(300, ign) / defAndign(300, ign_before) - 1) * 100).ToString("0.##") + "%(" + ((defAndign(300, ign2) / defAndign(300, ign_before2) - 1) * 100).ToString("0.##") + "%)\r\n";
+            replyM += "原伤害" + defAndign(300, ign_before) + "%(" + defAndign(300, ign_before2) + "%)\r\n";
+            replyM += "现伤害" + defAndign(300, ign) + "%(" + defAndign(300, ign2) + "%)\r\n";
+            replyM += "相当于提升了" + ((defAndign(300, ign) / defAndign(300, ign_before) - 1) * (100 + roleDmg.common_dmg + roleDmg.boss_dmg)).ToString("0.##") + "%(" + ((defAndign(300, ign2) / defAndign(300, ign_before2) - 1) * (100 + roleDmg.common_dmg + roleDmg.boss_dmg)).ToString("0.##") + "%)点boss伤害\r\n";
+
+            replyM += "//-----中防对比-----//\r\n";
+            replyM += "进阶贝伦提升率（200中防）：" + ((defAndign(200, ign) / defAndign(200, ign_before) - 1) * 100).ToString("0.##") + "%(" + ((defAndign(200, ign2) / defAndign(200, ign_before2) - 1) * 100).ToString("0.##") + "%)\r\n";
+            replyM += "原伤害" + defAndign(200, ign_before) + "%(" + defAndign(200, ign_before2) + "%)\r\n";
+            replyM += "现伤害" + defAndign(200, ign) + "%(" + defAndign(200, ign2) + "%)\r\n";
+            replyM += "相当于提升了" + ((defAndign(200, ign) / defAndign(200, ign_before) - 1) * (100 + roleDmg.common_dmg + roleDmg.boss_dmg)).ToString("0.##") + "%(" + ((defAndign(200, ign2) / defAndign(200, ign_before2) - 1) * (100 + roleDmg.common_dmg + roleDmg.boss_dmg)).ToString("0.##") + "%)点boss伤害";
+            result.Reply = ignImage(replyM);
+            result.AtSender = false;
+        }
+        return result;
+    }
+}
+@SetResult(GetResult())

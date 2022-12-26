@@ -32,7 +32,7 @@ public class RequestHelper
     /// <param name="headers">Http头</param>
     /// <param name="cookies">Cookies</param>
     public string WebRequest(string url, string method = "GET", int? timeOut = null,
-        string contentType = "application/x-www-form-urlencoded", object parameter = null,
+        string contentType = "application/json", object parameter = null,
         IDictionary<string, object> headers = null, params Cookie[] cookies)
     {
         if (string.IsNullOrEmpty(url))
@@ -227,6 +227,6 @@ public class RequestHelper
                 rsp.Close();
         }
 
-        return null;
+        return;
     }
 }

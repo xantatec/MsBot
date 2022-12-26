@@ -23,4 +23,9 @@ public abstract class TemplatePage<TModel> : TemplatePage
     {
         return Raw(SerializerHelper.Instance.JsonSerialize(result));
     }
+
+    public void SendGroupMsg()
+    { 
+        
+    }
 }

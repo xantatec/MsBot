@@ -1,0 +1,168 @@
+﻿@inherits TemplatePage<MsBotModel<GroupMsgReqVo>>
+@using MsBot.Implementation.MySql;
+@using MsBot.Implementation.Template;
+@using MsBot.Implementation.Template.Razor;
+@using MsBot.Infrastructure;
+@using MsBot.Vo.Events.Message;
+@using Dapper;
+@using System.Drawing;
+@functions {
+    private String SaveTempImage(string raw_message)
+    {
+        var imageName = Guid.NewGuid().ToString("N") + ".jpg";
+        RequestHelper.Instance.DownloadFile(raw_message, Model.Config.ImageFolder + "/" + imageName, imageName);
+        return imageName;
+    }
+
+    private Bitmap ResizeImage(Bitmap source, int width, int height)
+    {
+        return new Bitmap(source, width, height);
+    }
+
+    private Bitmap ConvertCircular(Bitmap source, int angle)
+    {
+        var b = new Bitmap(source.Width, source.Height);
+        using(var g = Graphics.FromImage(source))
+        {
+            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+            angle = angle % 360;
+            //弧度转换
+            var radian = angle * Math.PI / 180.0;
+            var cos = Math.Cos(radian);
+            var sin = Math.Sin(radian);
+            //原图的宽和高
+            var ww = b.Width;
+            var hh = b.Height;
+            var W = (int)(Math.Max(Math.Abs(ww * cos - hh * sin), Math.Abs(ww * cos + hh * sin)));
+            var H = (int)(Math.Max(Math.Abs(ww * sin - hh * cos), Math.Abs(ww * sin + hh * cos)));
+
+            //计算偏移量
+            Point Offset = new Point((W - ww) / 2, (H - hh) / 2);
+            //构造图像显示区域:让图像的中心与窗口的中心点一致
+            Rectangle rect = new Rectangle(Offset.X, Offset.Y, ww, hh);
+            Point center = new Point(rect.X + rect.Width / 2, rect.Y + rect.Height / 2);
+            g.TranslateTransform(center.X, center.Y);
+            g.RotateTransform(angle);
+            //恢复图像在水平和垂直方向的平移
+            g.TranslateTransform(-center.X, -center.Y);
+            g.DrawImage(b, 0, 0, b.Width, b.Height);
+            var r = Math.Min(b.Width, b.Height) / 2;
+            var c = new PointF(b.Width / 2.0F, b.Height / 2.0F);
+            for(int h = 0; h < b.Height; h++)
+            {
+                for(int w = 0; w < b.Width; w++)
+                {
+                    if((int)Math.Pow(r, 2) < ((int)Math.Pow(w * 1.0 - c.X, 2) + (int)Math.Pow(h * 1.0 - c.Y, 2)))
+                    {
+                        b.SetPixel(w, h, Color.Transparent);
+                    }
+                }
+            }
+            //画背景色圆
+            using(Pen p = new Pen(System.Drawing.SystemColors.Control))
+                g.DrawEllipse(p, 0, 0, b.Width, b.Height);
+        }
+        return b;
+    }
+
+    public String throwSomeone(string headImg)
+    {
+        var sourceFilePath = Model.Config.ImageFolder + "img/throw.jpg";
+        var waterFilePath = Model.Config.ImageFolder + headImg;
+        var uuid = Guid.NewGuid().ToString("N");
+        var saveFilePath = Model.Config.ImageFolder + uuid + ".png";
+        using(var sourceFile = new Bitmap(sourceFilePath))
+        {
+            var buffImg = new Bitmap(waterFilePath);
+            buffImg = ResizeImage(buffImg, 148, 148);
+            buffImg = ConvertCircular(buffImg, 300);
+        }
+        // BufferedImage sourceFile = ImageIO.read(new File(sourceFilePath));
+        // BufferedImage buffImg = ImageIO.read(new File(waterFilePath));
+        // buffImg = NewImageUtils.resizeBufferedImage(buffImg,148,148,true);
+        //  buffImg = NewImageUtils.convertCircular(buffImg);
+        //  buffImg = NewImageUtils.rotateImage(buffImg,300);
+        //buffImg = NewImageUtils.watermark(sourceFile, buffImg, 13, 175, 1.0f);
+        //BufferedImage newBufferedImage = new BufferedImage(
+        //             buffImg.getWidth(), buffImg.getHeight(),
+        //             BufferedImage.TYPE_INT_RGB);
+        // newBufferedImage.createGraphics().drawImage(buffImg, 0, 0,
+        //     Color.WHITE, null);
+        // // write to jpeg file
+        // ImageIO.write(newBufferedImage, "jpg", new File(MsbotConst.imageUrl + uuid +".jpg"));
+        //  generateWaterFile(newBufferedImage, saveFilePath);
+        return "[CQ:image,file=" + uuid + ".jpg]";
+    }
+
+    private GroupMsgRspVo GetResult()
+    {
+        var request = Model.Request;
+        var config = Model.Config;
+        var rawMsg = Model.Request.RawMessage;
+
+
+        int aIndex = rawMsg.IndexOf("[CQ:at,qq=") + 10;
+        int bIndex = rawMsg.IndexOf("]");
+        var findNumber = rawMsg.Substring(aIndex, bIndex - aIndex);
+        var result = new GroupMsgRspVo { };
+        if(rawMsg.Contains("别") || rawMsg.Contains("不") || rawMsg.Contains("怎么") || rawMsg.Contains("禁止"))
+        {
+            result.AtSender = true;
+            result.Reply = "[CQ:image,file=img/buzhidao5.jpg]";
+            return result;
+        }
+        var throwSomeone = "";
+        if(config.BotMaster.Contains(findNumber))
+        {
+            var saveTempImage = SaveTempImage("http://q1.qlogo.cn/g?b=qq&nk=" + request.UserId + "&s=3");
+            throwSomeone = drawService.throwSomeone(saveTempImage);
+            result.setAt_sender(false);
+            result.setReply("[CQ:at,qq=" + receiveMsg.getUser_id() + "]" + throwSomeone);
+        }
+        else
+        {
+            String saveTempImage = mvpImageService.saveTempImage("http://q1.qlogo.cn/g?b=qq&nk=" + findNumber + "&s=3");
+            throwSomeone = drawService.throwSomeone(saveTempImage);
+            result.setAt_sender(false);
+            result.setReply("[CQ:at,qq=" + findNumber + "]" + throwSomeone);
+        }
+        return result;
+
+        var index = rawMsg.IndexOf("删除问题");
+        //select * from msg where id =
+        var id = 0l;
+        if(!long.TryParse(rawMsg.Substring(index + 4), out id))
+        {
+            return new GroupMsgRspVo
+                {
+                    AtSender = true,
+                    Reply = "恁输入的这是个什么玩意，要ID你晓得伐？！"
+                };
+        }
+
+        using(var conn = DbHelper.Instance.GetConnection(Model.Config.ConnectionString))
+        {
+            var msg = conn.QueryFirstOrDefault<Msg>("SELECT id, answer, question, create_id AS CreateId, link FROM msg WHERE id=@Id", new
+            {
+                Id = id
+            });
+            if(msg == null)
+            {
+                return new GroupMsgRspVo
+                    {
+                        AtSender = true,
+                        Reply = "指定问题不存在"
+                    };
+            }
+            else
+            {
+                return new GroupMsgRspVo
+                    {
+                        AtSender = true,
+                        Reply = "删除成功，问题：" + msg.Question
+                    };
+            }
+        }
+    }
+}
+@SetResult(GetResult())

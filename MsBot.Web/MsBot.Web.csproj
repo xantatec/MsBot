@@ -12,17 +12,29 @@
 	<ItemGroup>
 	  <Content Remove="Templates\Razor\Message\_Groups\T.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_DeleteQuestion.cshtml" />
+	  <Content Remove="Templates\Razor\Message\_Groups\_Part_FuDuJiZhouBao.cshtml" />
+	  <Content Remove="Templates\Razor\Message\_Groups\_Part_Reng.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_RollDian.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_SearchMob.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_SearchQuestion.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_Study_Bool.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_Study_Normal.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_Study_Regex.cshtml" />
+	  <Content Remove="Templates\Razor\Message\_Groups\_Part_WuShiCalc.cshtml" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<None Include="Templates\Razor\Message\GroupMsg.cshtml">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="Templates\Razor\Message\_Groups\_Part_Reng.cshtml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="Templates\Razor\Message\_Groups\_Part_FuDuJiZhouBao.cshtml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="Templates\Razor\Message\_Groups\_Part_WuShiCalc.cshtml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Include="Templates\Razor\Message\_Groups\_Part_DeleteQuestion.cshtml">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -66,6 +78,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="MySql.EntityFrameworkCore" Version="6.0.7" />
+		<PackageReference Include="System.Drawing.Common" Version="7.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

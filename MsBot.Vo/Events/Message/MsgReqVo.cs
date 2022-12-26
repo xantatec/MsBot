@@ -68,7 +68,7 @@ public class MessageSenderVo
     /// 昵称
     /// </summary>
     [JsonProperty("nickname")]
-    public string Nickname { get; set; }
+    public string NickName { get; set; }
 
     /// <summary>
     /// 性别
@@ -81,6 +81,42 @@ public class MessageSenderVo
     /// </summary>
     [JsonProperty("age")]
     public int Age { get; set; }
+
+    /// <summary>
+    /// 临时群消息来源群号-当私聊类型为群临时会话时的额外字段
+    /// </summary>
+    [JsonProperty("group_id")]
+    public long GroupId { get; set; }
+
+    /// <summary>
+    /// 群名片/备注-群聊
+    /// </summary>
+    [JsonProperty("card")]
+    public string Card { get; set; }
+
+    /// <summary>
+    /// 地区-群聊
+    /// </summary>
+    [JsonProperty("area")]
+    public string Area { get; set; }
+
+    /// <summary>
+    /// 成员等级-群聊
+    /// </summary>
+    [JsonProperty("level")]
+    public string Level { get; set; }
+
+    /// <summary>
+    /// 角色 owner 或 admin 或 member-群聊
+    /// </summary>
+    [JsonProperty("role")]
+    public string Role { get; set; }
+
+    /// <summary>
+    /// 专属头衔-群聊
+    /// </summary>
+    [JsonProperty("title")]
+    public string Title { get; set; }
 }
 
 /// <summary>

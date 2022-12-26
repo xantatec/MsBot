@@ -1,7 +1,9 @@
 ﻿@inherits TemplatePage<MsBotModel<GroupMsgReqVo>>
+@using MsBot.Implementation.API;
 @using MsBot.Implementation.MySql;
 @using MsBot.Implementation.Template;
 @using MsBot.Implementation.Template.Razor;
+@using MsBot.Vo.API;
 @using MsBot.Vo.Events.Message;
 @using System.Text.RegularExpressions;
 @using MsBot.Infrastructure;
@@ -162,82 +164,23 @@
                 .Append(attrMap["D"])
                 .Append(attrMap["P"]);
             }
-            var result = new GroupMsgRspVo { AtSender = true };
+            APIHelper.Instance.SendGroupMsg(new GroupMsgVo
+            {
+                GroupId = Model.Request.GroupId,
+                Message = sb.ToString()
+            });
 
             if(mobNameList.Count >= 2)
             {
-                result.Reply = "查询到同名的怪物有：";
-                result.Reply += Environment.NewLine + string.Join(Environment.NewLine, mobNameList.Select(mn => mn.Name + "(" + mn.MobId + ")"));
-            }
-        }
-
-
-        GroupMsg groupMsg = new GroupMsg();
-        groupMsg.setGroup_id(Long.parseLong(group_id));
-        groupMsg.setMessage(reply.toString());
-        groupMsgService.sendGroupMsg(groupMsg);
-
-        if(mobNameList.size() >= 2)
-        {
-            String reply2 = "查询到同名怪物有：";
-            for(MobName mn : mobNameList)
-            {
-                reply2 = reply2 + "\r\n" + mn.getName() + "(" + mn.getMobId() + ")";
-            }
-            GroupMsg groupMsg2 = new GroupMsg();
-            groupMsg2.setGroup_id(Long.parseLong(group_id));
-            groupMsg2.setMessage(reply2);
-            groupMsgService.sendGroupMsg(groupMsg2);
-        }
-
-        List<MobName> mobNameLikeList = mobNameRepository.findByNameLike(rawMsg);
-        mobNameLikeList.removeAll(mobNameList);
-        System.out.println("相似的结果量" + mobNameLikeList.size());
-        String reply3 = "查询到相似的怪物有：";
-        if(mobNameLikeList.size() == 0)
-        {
-            reply3 = "查询到相似的怪物有：null";
-            return null;
-        }
-        else if(mobNameLikeList.size() < 10)
-        {
-            for(MobName mn : mobNameLikeList)
-            {
-                reply3 = reply3 + "\r\n" + mn.getName() + "(" + mn.getMobId() + ")";
-            }
-        }
-        else
-        {
-            reply3 = "查询到相似的怪物有：查询结果超过10条，为防止刷屏，已将结果私聊于您。";
-            int k = 0;
-            String pReply = "";
-            while(mobNameLikeList.size() > 0)
-            {
-                MobName remove = mobNameLikeList.remove(0);
-                pReply = pReply + remove.getName() + "(" + remove.getMobId() + ")" + "\r\n";
-                k++;
-                if(k == 10)
+                var reply = "查询到同名的怪物有：";
+                reply += Environment.NewLine + string.Join(Environment.NewLine, mobNameList.Select(mn => mn.Name + "(" + mn.MobId + ")"));
+                APIHelper.Instance.SendGroupMsg(new GroupMsgVo
                 {
-                    PrivateMsg privateMsg = new PrivateMsg();
-                    privateMsg.setUser_id(Long.parseLong(user_id));
-                    privateMsg.setMessage(pReply);
-                    groupMsgService.sendPrivateMsg(privateMsg);
-                    pReply = "";
-                    k = 0;
-                }
-            }
-            if(!pReply.equals(""))
-            {
-                PrivateMsg privateMsg = new PrivateMsg();
-                privateMsg.setUser_id(Long.parseLong(user_id));
-                privateMsg.setMessage(pReply);
-                groupMsgService.sendPrivateMsg(privateMsg);
+                    GroupId = Model.Request.GroupId,
+                    Message = reply
+                });
             }
         }
-        GroupMsg groupMsg3 = new GroupMsg();
-        groupMsg3.setGroup_id(Long.parseLong(group_id));
-        groupMsg3.setMessage(reply3);
-        groupMsgService.sendGroupMsg(groupMsg3);
         return null;
     }
 }
