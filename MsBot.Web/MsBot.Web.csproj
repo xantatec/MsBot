@@ -13,6 +13,7 @@
 	  <Content Remove="Templates\Razor\Message\_Groups\T.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_DeleteQuestion.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_FuDuJiZhouBao.cshtml" />
+	  <Content Remove="Templates\Razor\Message\_Groups\_Part_GuanWang.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_Reng.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_RollDian.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_SearchMob.cshtml" />
@@ -21,11 +22,18 @@
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_Study_Normal.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_Study_Regex.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_WuShiCalc.cshtml" />
+	  <Content Remove="Templates\Razor\Message\_Groups\_Part_Zou.cshtml" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<None Include="Templates\Razor\Message\GroupMsg.cshtml">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="Templates\Razor\Message\_Groups\_Part_GuanWang.cshtml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="Templates\Razor\Message\_Groups\_Part_Zou.cshtml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Include="Templates\Razor\Message\_Groups\_Part_Reng.cshtml">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -67,6 +75,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Dapper" Version="2.0.123" />
+		<PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.1" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.1">
 			<PrivateAssets>all</PrivateAssets>

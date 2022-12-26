@@ -1,0 +1,21 @@
+﻿@inherits TemplatePage<MsBotModel<GroupMsgReqVo>>
+@using MsBot.Implementation.MySql;
+@using MsBot.Implementation.Template;
+@using MsBot.Implementation.Template.Razor;
+@using MsBot.Infrastructure;
+@using MsBot.Vo.Events.Message;
+@using Dapper;
+@functions {
+    private GroupMsgRspVo GetResult()
+    {
+        var rawMsg = Model.Request.RawMessage;
+        var config = Model.Config;
+        rawMsg = rawMsg.Replace(config.BotName, "");
+
+        var url = "http://mxd.sdo.com/web6/news/newsList.asp?wd=" + rawMsg + "&CategoryID=a";
+
+        var doc = RequestHelper.Instance.HtmlAgilityPack(url);
+        doc.DocumentNode.SelectNodes("/")
+    }
+}
+@SetResult(GetResult())

@@ -52,9 +52,9 @@
         return dstImage;
     }
 
-    private string ThrowSomeone(string headImg)
+    private string PunchSomeone(string headImg)
     {
-        var sourceFilePath = Path.Combine(Model.Config.ImageFolder, "img/throw.jpg");
+        var sourceFilePath = Path.Combine(Model.Config.ImageFolder, "img/punch.jpg");
         var waterFilePath = Path.Combine(Model.Config.ImageFolder, headImg);
         var uuid = Guid.NewGuid().ToString().Replace("-", "");
 
@@ -150,7 +150,7 @@
         imageAttributes.SetColorMatrix(wmColorMatrix, ColorMatrixFlag.Default,
          ColorAdjustType.Bitmap);
         // 第二次绘图，把水印印上去
-        grWatermark.DrawImage(waterImage, new Rectangle(13, 175, wmWidth, wmHeight), 0, 0, wmWidth, wmHeight, GraphicsUnit.Pixel, imageAttributes);
+        grWatermark.DrawImage(waterImage, new Rectangle(280, 270, wmWidth, wmHeight), 0, 0, wmWidth, wmHeight, GraphicsUnit.Pixel, imageAttributes);
 
 
         sourcePicture = bmWatermark;
@@ -184,14 +184,14 @@
         if(config.BotMaster.Contains(findNumber))
         {
             var saveTempImage = SaveTempImage("http://q1.qlogo.cn/g?b=qq&nk=" + request.UserId + "&s=3");
-            throwSomeone = ThrowSomeone(saveTempImage);
+            throwSomeone = PunchSomeone(saveTempImage);
             result.AtSender=false;
             result.Reply="[CQ:at,qq=" + request.UserId + "]" + throwSomeone;
         }
         else
         {
             String saveTempImage = SaveTempImage("http://q1.qlogo.cn/g?b=qq&nk=" + findNumber + "&s=3");
-            throwSomeone = ThrowSomeone(saveTempImage);
+            throwSomeone = PunchSomeone(saveTempImage);
             result.AtSender=false;
             result.Reply="[CQ:at,qq=" + findNumber + "]" + throwSomeone;
         }
