@@ -6,18 +6,23 @@
 @using MsBot.Vo.API;
 @using MsBot.Vo.Events.Message;
 @using Dapper;
-@using System.Drawing;
+@using SixLabors.Fonts;
+@using SixLabors.ImageSharp;
+@using SixLabors.ImageSharp.Drawing;
+@using SixLabors.ImageSharp.Drawing.Processing;
+@using SixLabors.ImageSharp.PixelFormats;
+@using SixLabors.ImageSharp.Processing;
 @functions {
     public class RoleDmg
     {
-        public long id{ get; set; }
+        public long id { get; set; }
         public string user_id { get; set; }
         public string name { get; set; }
         public string group_id { get; set; }
         public int common_dmg { get; set; }
         public int boss_dmg { get; set; }
     }
-    private static double defAndign(double def, double ign)
+    private static double DefAndign(double def, double ign)
     {
         double i = double.Parse((100 - (def - ign * def / 100)).ToString("0.00"));
         if(i < 0)
@@ -27,54 +32,55 @@
         return i;
     }
 
-    public string ignImage(string ignDate)
+    public string IgnImage(string ignDate)
     {
         string[] split = ignDate.Split("\r\n");
-        string sourceFilePath = Model.Config.ImageFolder+ "img/ign_background.jpg";
+        string sourceFilePath = Model.Config.ImageFolder + "img/ign_background.jpg";
         string uuid = Guid.NewGuid().ToString("N");
-        using (var bitMap = new Bitmap(sourceFilePath))
+        using(var bitMap = Image.Load(sourceFilePath))
         {
-            using (var g = Graphics.FromImage(bitMap))
+            var fonts = new FontCollection();
+            var fontfamily = fonts.Add(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Fonts", "XINGKAI.TTF"));
+            var font = fontfamily.CreateFont(16, FontStyle.Bold);
+            bitMap.Mutate(x =>
             {
-                using (var brush = new SolidBrush(Color.FromArgb(230, 230, 230)))
-                {
-                    int x1 = 65;
-                    int x2 = 382;
-                    int x3 = 687;
-                    int y1 = 55;
-                    int y2 = 275;
-                    var font = new Font("Cascadia Code", 10);
-                    g.DrawString("基本数据", font, brush, x1,y1);
-                    g.DrawString("超高防对比", font, brush, x1, y2);
-                    g.DrawString("高防对比", font, brush, x2, y2);
-                    g.DrawString("中防对比", font, brush, x3, y2);
+                int x1 = 65;
+                int x2 = 382;
+                int x3 = 687;
+                int y1 = 55;
+                int y2 = 275;
 
-                    g.DrawString(split[0], font, brush,x1, y1+31);
-                    g.DrawString(split[1], font, brush,x1, y1+31*2);
-                    g.DrawString(split[2], font, brush,x1, y1+31*3);
-                    g.DrawString(split[3], font, brush,x1, y1+31*4);
+                x.DrawText("基本数据", font, Color.White, new PointF(x1, y1));
+                x.DrawText("超高防对比", font, Color.White, new PointF(x1, y2));
+                x.DrawText("高防对比", font, Color.White, new PointF(x2, y2));
+                x.DrawText("中防对比", font, Color.White, new PointF(x3, y2));
 
-                    g.DrawString(split[5], font, brush,x1, y2+31);
-                    g.DrawString(split[6], font, brush,x1, y2+31*2);
-                    g.DrawString(split[7], font, brush,x1, y2+31*3);
-                    g.DrawString(split[8], font, brush,x1, y2+31*4);
+                x.DrawText(split[0], font, Color.White, new PointF(x1, y1 + 31));
+                x.DrawText(split[1], font, Color.White, new PointF(x1, y1 + 31 * 2));
+                x.DrawText(split[2], font, Color.White, new PointF(x1, y1 + 31 * 3));
+                x.DrawText(split[3], font, Color.White, new PointF(x1, y1 + 31 * 4));
 
-                    g.DrawString(split[10], font, brush,x2, y2+31);
-                    g.DrawString(split[11], font, brush,x2, y2+31*2);
-                    g.DrawString(split[12], font, brush,x2, y2+31*3);
-                    g.DrawString(split[13], font, brush,x2, y2+31*4);
+                x.DrawText(split[5], font, Color.White, new PointF(x1, y2 + 31));
+                x.DrawText(split[6], font, Color.White, new PointF(x1, y2 + 31 * 2));
+                x.DrawText(split[7], font, Color.White, new PointF(x1, y2 + 31 * 3));
+                x.DrawText(split[8], font, Color.White, new PointF(x1, y2 + 31 * 4));
 
-                    g.DrawString(split[15], font, brush,x3, y2+31);
-                    g.DrawString(split[16], font, brush,x3, y2+31*2);
-                    g.DrawString(split[17], font, brush,x3, y2+31*3);
-                    g.DrawString(split[18], font, brush,x3, y2+31*4);
-                }
-            }
+                x.DrawText(split[10], font, Color.White, new PointF(x2, y2 + 31));
+                x.DrawText(split[11], font, Color.White, new PointF(x2, y2 + 31 * 2));
+                x.DrawText(split[12], font, Color.White, new PointF(x2, y2 + 31 * 3));
+                x.DrawText(split[13], font, Color.White, new PointF(x2, y2 + 31 * 4));
+
+                x.DrawText(split[15], font, Color.White, new PointF(x3, y2 + 31));
+                x.DrawText(split[16], font, Color.White, new PointF(x3, y2 + 31 * 2));
+                x.DrawText(split[17], font, Color.White, new PointF(x3, y2 + 31 * 3));
+                x.DrawText(split[18], font, Color.White, new PointF(x3, y2 + 31 * 4));
+            });
+
             String saveFilePath = Model.Config.ImageFolder + uuid + ".jpg";
-            bitMap.Save(saveFilePath, System.Drawing.Imaging.ImageFormat.Jpeg);
+            bitMap.SaveAsJpeg(saveFilePath);
         }
 
-        return "[CQ:image,file=" + uuid +".jpg]";
+        return "[CQ:image,file=" + uuid + ".jpg]";
     }
 
     private GroupMsgRspVo GetResult()
@@ -148,8 +154,8 @@
         using(var conn = DbHelper.Instance.GetConnection(Model.Config.ConnectionString))
         {
             var sql = "SELECT * FROM role_dmg WHERE user_id = @UserId";
-            var roleDmg= conn.QueryFirstOrDefault<RoleDmg>(sql, new { UserId = request.Sender.UserId });
-            if (roleDmg == null)
+            var roleDmg = conn.QueryFirstOrDefault<RoleDmg>(sql, new { UserId = request.Sender.UserId });
+            if(roleDmg == null)
             {
                 roleDmg = new RoleDmg();
                 //设置群名片 如果没有 设置昵称
@@ -169,33 +175,33 @@ VALUES(@user_id, @name, @group_id, @common_dmg, @boss_dmg)";
                 conn.Execute(sql, roleDmg);
 
                 APIHelper.Instance.SendGroupMsg(new GroupMessageReqVo
-                {
-                    GroupId=request.GroupId,
-                    Message = "[CQ:at,qq=" + request.Sender.UserId + "]" + "未查询到角色信息，默认伤害100,boss伤200。你可通过指令【" + config.BotName+ " 伤害50 boss300】命令修改角色信息"
-                });
+                    {
+                        GroupId = request.GroupId,
+                        Message = "[CQ:at,qq=" + request.Sender.UserId + "]" + "未查询到角色信息，默认伤害100,boss伤200。你可通过指令【" + config.BotName + " 伤害50 boss300】命令修改角色信息"
+                    });
             }
 
             ign2 = ign + (100 - ign) * 20 / 100;
             String replyM = "你之前的无视：" + ign_before + "%(" + ign_before2 + "%)\r\n" + "计算后的无视：" + ign.ToString("0.##") + "%(" + ign2.ToString("0.##") + "%)\r\n";
             replyM += "角色数据 伤害:" + roleDmg.common_dmg + "% boss:" + roleDmg.boss_dmg + "%\r\n(括号为核心20%无视加成结果)\r\n";
             replyM += "//----超高防对比-----//\r\n";
-            replyM += "塞伦提升率（380超高防）：" + ((defAndign(380, ign) / defAndign(380, ign_before) - 1) * 100).ToString("0.##") + "%(" + ((defAndign(380, ign2) / defAndign(380, ign_before2) - 1) * 100).ToString("0.##") + "%)\r\n";
-            replyM += "原伤害" + defAndign(380, ign_before) + "%(" + defAndign(380, ign_before2) + "%)\r\n";
-            replyM += "现伤害" + defAndign(380, ign) + "%(" + defAndign(380, ign2) + "%)\r\n";
-            replyM += "相当于提升了" + ((defAndign(380, ign) / defAndign(380, ign_before) - 1) * (100 + roleDmg.common_dmg + roleDmg.boss_dmg)).ToString("0.##") + "%(" + ((defAndign(380, ign2) / defAndign(380, ign_before2) - 1) * (100 + roleDmg.common_dmg + roleDmg.boss_dmg)).ToString("0.##") + "%)点boss伤害\r\n";
+            replyM += "塞伦提升率（380超高防）：" + ((DefAndign(380, ign) / DefAndign(380, ign_before) - 1) * 100).ToString("0.##") + "%(" + ((DefAndign(380, ign2) / DefAndign(380, ign_before2) - 1) * 100).ToString("0.##") + "%)\r\n";
+            replyM += "原伤害" + DefAndign(380, ign_before) + "%(" + DefAndign(380, ign_before2) + "%)\r\n";
+            replyM += "现伤害" + DefAndign(380, ign) + "%(" + DefAndign(380, ign2) + "%)\r\n";
+            replyM += "相当于提升了" + ((DefAndign(380, ign) / DefAndign(380, ign_before) - 1) * (100 + roleDmg.common_dmg + roleDmg.boss_dmg)).ToString("0.##") + "%(" + ((DefAndign(380, ign2) / DefAndign(380, ign_before2) - 1) * (100 + roleDmg.common_dmg + roleDmg.boss_dmg)).ToString("0.##") + "%)点boss伤害\r\n";
 
             replyM += "//-----高防对比-----//\r\n";
-            replyM += "斯乌提升率（300高防）：" + ((defAndign(300, ign) / defAndign(300, ign_before) - 1) * 100).ToString("0.##") + "%(" + ((defAndign(300, ign2) / defAndign(300, ign_before2) - 1) * 100).ToString("0.##") + "%)\r\n";
-            replyM += "原伤害" + defAndign(300, ign_before) + "%(" + defAndign(300, ign_before2) + "%)\r\n";
-            replyM += "现伤害" + defAndign(300, ign) + "%(" + defAndign(300, ign2) + "%)\r\n";
-            replyM += "相当于提升了" + ((defAndign(300, ign) / defAndign(300, ign_before) - 1) * (100 + roleDmg.common_dmg + roleDmg.boss_dmg)).ToString("0.##") + "%(" + ((defAndign(300, ign2) / defAndign(300, ign_before2) - 1) * (100 + roleDmg.common_dmg + roleDmg.boss_dmg)).ToString("0.##") + "%)点boss伤害\r\n";
+            replyM += "斯乌提升率（300高防）：" + ((DefAndign(300, ign) / DefAndign(300, ign_before) - 1) * 100).ToString("0.##") + "%(" + ((DefAndign(300, ign2) / DefAndign(300, ign_before2) - 1) * 100).ToString("0.##") + "%)\r\n";
+            replyM += "原伤害" + DefAndign(300, ign_before) + "%(" + DefAndign(300, ign_before2) + "%)\r\n";
+            replyM += "现伤害" + DefAndign(300, ign) + "%(" + DefAndign(300, ign2) + "%)\r\n";
+            replyM += "相当于提升了" + ((DefAndign(300, ign) / DefAndign(300, ign_before) - 1) * (100 + roleDmg.common_dmg + roleDmg.boss_dmg)).ToString("0.##") + "%(" + ((DefAndign(300, ign2) / DefAndign(300, ign_before2) - 1) * (100 + roleDmg.common_dmg + roleDmg.boss_dmg)).ToString("0.##") + "%)点boss伤害\r\n";
 
             replyM += "//-----中防对比-----//\r\n";
-            replyM += "进阶贝伦提升率（200中防）：" + ((defAndign(200, ign) / defAndign(200, ign_before) - 1) * 100).ToString("0.##") + "%(" + ((defAndign(200, ign2) / defAndign(200, ign_before2) - 1) * 100).ToString("0.##") + "%)\r\n";
-            replyM += "原伤害" + defAndign(200, ign_before) + "%(" + defAndign(200, ign_before2) + "%)\r\n";
-            replyM += "现伤害" + defAndign(200, ign) + "%(" + defAndign(200, ign2) + "%)\r\n";
-            replyM += "相当于提升了" + ((defAndign(200, ign) / defAndign(200, ign_before) - 1) * (100 + roleDmg.common_dmg + roleDmg.boss_dmg)).ToString("0.##") + "%(" + ((defAndign(200, ign2) / defAndign(200, ign_before2) - 1) * (100 + roleDmg.common_dmg + roleDmg.boss_dmg)).ToString("0.##") + "%)点boss伤害";
-            result.Reply = ignImage(replyM);
+            replyM += "进阶贝伦提升率（200中防）：" + ((DefAndign(200, ign) / DefAndign(200, ign_before) - 1) * 100).ToString("0.##") + "%(" + ((DefAndign(200, ign2) / DefAndign(200, ign_before2) - 1) * 100).ToString("0.##") + "%)\r\n";
+            replyM += "原伤害" + DefAndign(200, ign_before) + "%(" + DefAndign(200, ign_before2) + "%)\r\n";
+            replyM += "现伤害" + DefAndign(200, ign) + "%(" + DefAndign(200, ign2) + "%)\r\n";
+            replyM += "相当于提升了" + ((DefAndign(200, ign) / DefAndign(200, ign_before) - 1) * (100 + roleDmg.common_dmg + roleDmg.boss_dmg)).ToString("0.##") + "%(" + ((DefAndign(200, ign2) / DefAndign(200, ign_before2) - 1) * (100 + roleDmg.common_dmg + roleDmg.boss_dmg)).ToString("0.##") + "%)点boss伤害";
+            result.Reply = IgnImage(replyM);
             result.AtSender = false;
         }
         return result;

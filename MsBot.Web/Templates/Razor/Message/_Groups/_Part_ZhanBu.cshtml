@@ -5,72 +5,19 @@
 @using MsBot.Infrastructure;
 @using MsBot.Vo.Events.Message;
 @using Dapper;
-@using System.Drawing;
-@using System.Drawing.Drawing2D;
-@using System.Drawing.Imaging;
+@using SixLabors.Fonts;
+@using SixLabors.ImageSharp;
+@using SixLabors.ImageSharp.Drawing;
+@using SixLabors.ImageSharp.Drawing.Processing;
+@using SixLabors.ImageSharp.Formats.Jpeg;
+@using SixLabors.ImageSharp.PixelFormats;
+@using SixLabors.ImageSharp.Processing;
 @functions {
     private String SaveTempImage(string raw_message)
     {
         var imageName = Guid.NewGuid().ToString("N") + ".jpg";
         RequestHelper.Instance.DownloadFile(raw_message, Model.Config.ImageFolder, imageName);
         return imageName;
-    }
-
-    private Bitmap PicResize(Image sourceImage, int width, int height)
-    {
-        var resizeBmp = new Bitmap(width, height);
-        var g = Graphics.FromImage(resizeBmp);
-        g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-        g.SmoothingMode = SmoothingMode.HighQuality;
-        g.CompositingQuality = CompositingQuality.HighQuality;
-        g.SmoothingMode = SmoothingMode.AntiAlias;
-        g.DrawImage(sourceImage, new Rectangle(0, 0, width, height), new Rectangle(0, 0, sourceImage.Width, sourceImage.Height), GraphicsUnit.Pixel);
-        g.Dispose();
-        return resizeBmp;
-    }
-
-    public void DrawImage(Bitmap modifyImage, Bitmap drawedImage, int x, int y, string targetFilePath)
-    {
-        Graphics g = null;
-        try
-        {
-            g = Graphics.FromImage(modifyImage);
-
-            //设置颜色矩阵
-            float[][] matrixItems =
-            {
-                new float[] {1, 0, 0, 0, 0},
-                new float[] {0, 1, 0, 0, 0},
-                new float[] {0, 0, 1, 0, 0},
-                new float[] {0, 0, 0, 1f, 0},
-                new float[] {0, 0, 0, 0, 1}
-            };
-
-            ColorMatrix colorMatrix = new ColorMatrix(matrixItems);
-            ImageAttributes imgAttr = new ImageAttributes();
-            imgAttr.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-
-            g.DrawImage(//绘制阴影图像
-             drawedImage,
-             new Rectangle(x, y, drawedImage.Width, drawedImage.Height),
-             0, 0, drawedImage.Width, drawedImage.Height,
-             GraphicsUnit.Pixel, imgAttr);
-
-            modifyImage.Save(targetFilePath, ImageFormat.Jpeg);
-            modifyImage.Dispose();
-            drawedImage.Dispose();
-            g.Dispose();
-        }
-        finally
-        {
-            try
-            {
-                drawedImage.Dispose();
-                modifyImage.Dispose();
-                g.Dispose();
-            }
-            catch { }
-        }
     }
 
     public class LuckyTable
@@ -99,47 +46,50 @@
 
     public string ZbImage(Dictionary<String, String> map)
     {
-        using(var buffImg = new Bitmap(500, 500, PixelFormat.Format32bppArgb))
+        using(var buffImg = new Image<Rgba32>(500, 500, Rgba32.ParseHex("#FFFFFF")))
         {
-            using(var g = Graphics.FromImage(buffImg))
+            var fonts = new FontCollection();
+            var fontfamily = fonts.Add(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Fonts", "XINGKAI.TTF"));
+            var font = fontfamily.CreateFont(18, FontStyle.Bold);
+            var uuid = Guid.NewGuid().ToString("N");
+            buffImg.Mutate(x =>
             {
-                var brush = new SolidBrush(Color.White);
-                var font = new Font("Cascadia Code", 12);
-                g.FillRectangle(brush, 0, 0, 500, 500); //填充整个屏幕
-                brush.Dispose();
-                brush = new SolidBrush(Color.Black);
-                g.DrawImage(buffImg, 32, 32, buffImg.Width, buffImg.Height);
-                g.DrawString(map["name"], font, brush, 32, 24);
-                g.DrawString(map["star"], font, brush, 32, 24 * 2);
-                g.DrawString(map["ch"], font, brush, 32, 24 * 3);
-                g.DrawString(map["table"], font, brush, 32, 24 * 4);
-                g.DrawString("//-------------------//", font, brush, 32, 24 * 5);
+                x.DrawText(map["name"], font, Color.Black, new Point(32, 24));
+                x.DrawText(map["star"], font, Color.Black, new Point(32, 24 * 2));
+                x.DrawText(map["ch"], font, Color.Black, new Point(32, 24 * 3));
+                x.DrawText(map["table"], font, Color.Black, new Point(32, 24 * 4));
+                x.DrawText("//-------------------//", font, Color.Black, new Point(32, 24 * 5));
 
                 var split = map["gThing"].Split('\n');
 
-                g.DrawString(split[0], font, brush, 32, 24 * 6);
-                g.DrawString(split[1], font, brush, 32, 24 * 7);
-                g.DrawString("//-------------------//", font, brush, 32, 24 * 8);
+                x.DrawText(split[0], font, Color.Black, new Point(32, 24 * 6));
+                x.DrawText(split[1], font, Color.Black, new Point(32, 24 * 7));
+                x.DrawText("//-------------------//", font, Color.Black, new Point(32, 24 * 8));
                 split = map["bThing"].Split('\n');
-                g.DrawString(split[0], font, brush, 32, 24 * 9);
-                g.DrawString(split[1], font, brush, 32, 24 * 10);
-                g.DrawString("//-------------------//", font, brush, 32, 24 * 11);
-                g.DrawString("今日最佳玄学地图是：", font, brush, 32, 24 * 12);
-                g.DrawString(map["map"], font, brush, 32, 24 * 13);
+                x.DrawText(split[0], font, Color.Black, new Point(32, 24 * 9));
+                x.DrawText(split[1], font, Color.Black, new Point(32, 24 * 10));
+                x.DrawText("//-------------------//", font, Color.Black, new Point(32, 24 * 11));
+                x.DrawText("今日最佳玄学地图是：", font, Color.Black, new Point(32, 24 * 12));
+                x.DrawText(map["map"], font, Color.Black, new Point(32, 24 * 13));
                 var mapUrl = map["mapUrl"];
 
 
                 mapUrl = mapUrl.Substring(mapUrl.IndexOf("save"), mapUrl.Length - 1 - mapUrl.IndexOf("save"));
                 var mapFilePath = Model.Config.ImageFolder + mapUrl;
                 mapFilePath = mapFilePath.Replace("\\", "/");
-                var mapFile = new Bitmap(mapFilePath);
-                mapFile = PicResize(mapFile, 220, 150);
-                var uuid = Guid.NewGuid().ToString("N");
-                var saveFilePath = Model.Config.ImageFolder + uuid + ".png";
-                DrawImage(buffImg, mapFile, 270, 24 * 13 + 10, saveFilePath);
-                brush.Dispose();
-                return "[CQ:image,file=" + uuid + ".jpg]";
-            }
+                using(var mapFile = Image.Load(mapFilePath))
+                {
+                    mapFile.Mutate(m =>
+                    {
+                        m.Resize(220, 150);
+                    });
+
+                    x.DrawImage(mapFile, new Point(270, 24 * 13 + 10), 1);
+                }
+            });
+            var saveFilePath = Model.Config.ImageFolder + uuid + ".jpg";
+            buffImg.SaveAsJpeg(saveFilePath, new JpegEncoder { Quality = 100 });
+            return "[CQ:image,file=" + uuid + ".jpg]";
         }
     }
 

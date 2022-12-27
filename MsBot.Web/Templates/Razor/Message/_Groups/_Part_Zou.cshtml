@@ -5,9 +5,12 @@
 @using MsBot.Infrastructure;
 @using MsBot.Vo.Events.Message;
 @using Dapper;
-@using System.Drawing;
-@using System.Drawing.Drawing2D;
-@using System.Drawing.Imaging;
+@using SixLabors.Fonts;
+@using SixLabors.ImageSharp;
+@using SixLabors.ImageSharp.Drawing;
+@using SixLabors.ImageSharp.Drawing.Processing;
+@using SixLabors.ImageSharp.PixelFormats;
+@using SixLabors.ImageSharp.Processing;
 @functions {
     private String SaveTempImage(string raw_message)
     {
@@ -16,151 +19,29 @@
         return imageName;
     }
 
-    private Image PicResize(Image sourceImage, int width, int height)
-    {
-        var resizeBmp = new Bitmap(width, height);
-        var g = Graphics.FromImage(resizeBmp);
-        g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-        g.SmoothingMode = SmoothingMode.HighQuality;
-        g.CompositingQuality = CompositingQuality.HighQuality;
-        g.SmoothingMode = SmoothingMode.AntiAlias;
-        g.DrawImage(sourceImage, new Rectangle(0, 0, width, height), new Rectangle(0, 0, sourceImage.Width, sourceImage.Height), GraphicsUnit.Pixel);
-        g.Dispose();
-        return resizeBmp;
-    }
-
-    private Image CropToCircle(Image srcImage, Color backGround)
-    {
-        Bitmap dstImage = new Bitmap(srcImage.Width, srcImage.Height);
-        Graphics g = Graphics.FromImage(dstImage);
-        //设置 System.Drawing.Graphics对象的SmoothingMode属性为HighQuality
-        g.SmoothingMode = SmoothingMode.HighQuality;
-        //下面这个也设成高质量
-        g.CompositingQuality = CompositingQuality.HighQuality;
-        //下面这个设成High
-        g.InterpolationMode = InterpolationMode.High;
-        using(Brush br = new SolidBrush(backGround))
-        {
-            g.FillRectangle(br, 0, 0, dstImage.Width, dstImage.Height);
-        }
-
-        GraphicsPath path = new GraphicsPath();
-        path.AddEllipse(0, 0, dstImage.Width, dstImage.Height);
-        g.SetClip(path);
-        g.DrawImage(srcImage, 0, 0);
-
-        return dstImage;
-    }
-
     private string PunchSomeone(string headImg)
     {
-        var sourceFilePath = Path.Combine(Model.Config.ImageFolder, "img/punch.jpg");
-        var waterFilePath = Path.Combine(Model.Config.ImageFolder, headImg);
+        var sourceFilePath = System.IO.Path.Combine(Model.Config.ImageFolder, "img/punch.jpg");
+        var waterFilePath = System.IO.Path.Combine(Model.Config.ImageFolder, headImg);
         var uuid = Guid.NewGuid().ToString().Replace("-", "");
 
-        var sourceImage = Image.FromFile(sourceFilePath);
-        var waterImage = Image.FromFile(waterFilePath);
-        var smallImage = PicResize(waterImage, 148, 148);
-        waterImage.Dispose();
-        var circleImage = CropToCircle(smallImage, Color.Transparent);
-        smallImage.Dispose();
-        var targetFileName = uuid + ".jpg";
-        DrawImage(sourceImage, circleImage, Model.Config.ImageFolder + targetFileName);
-
-        sourceImage.Dispose();
-        waterImage.Dispose();
-
+        using (var sourceImage = Image.Load(sourceFilePath))
+        {
+            using(var waterImage = Image.Load(waterFilePath))
+            {
+                waterImage.Mutate(w =>
+                {
+                    w.Resize(148, 148).Clip(new EllipsePolygon(0, 0, 148, 148), c => { });
+                });
+                sourceImage.Mutate(x =>
+                {
+                    x.DrawImage(waterImage, new Point(280, 270), 1);
+                });
+            }
+            var targetFileName = uuid + ".jpg";
+            sourceImage.SaveAsJpeg(Model.Config.ImageFolder + targetFileName);
+        }
         return "[CQ:image,file=" + uuid + ".jpg]";
-    }
-
-    /// <summary>
-    /// 添加图片水印
-    /// </summary>
-    /// <param name="sourcePicture">源图片文件名</param>
-    /// <param name="waterImage">水印图片文件名</param>
-    /// <param name="PicturePath" >图片的路径</param>
-    /// <param name="targetFilePath">目标存储文件</param>
-    /// <returns>返回生成于指定文件夹下的水印文件名</returns>
-    public void DrawImage(Image sourcePicture, Image waterImage, string targetFilePath)
-    {
-        // 确定其长宽
-        int phWidth = sourcePicture.Width;
-        int phHeight = sourcePicture.Height;
-
-        // 封装 GDI+ 位图，此位图由图形图像及其属性的像素数据组成。
-        Bitmap bmPhoto = new Bitmap(phWidth, phHeight, PixelFormat.Format24bppRgb);
-
-        // 设定分辨率
-        bmPhoto.SetResolution(sourcePicture.HorizontalResolution, sourcePicture.VerticalResolution);
-
-        // 定义一个绘图画面用来装载位图
-        Graphics grPhoto = Graphics.FromImage(bmPhoto);
-
-        //同样，由于水印是图片，我们也需要定义一个Image来装载它
-        //
-        // 获取水印图片的高度和宽度
-        //
-        int wmWidth = waterImage.Width;
-        int wmHeight = waterImage.Height;
-
-        //SmoothingMode：指定是否将平滑处理（消除锯齿）应用于直线、曲线和已填充区域的边缘。
-        // 成员名称   说明
-        // AntiAlias      指定消除锯齿的呈现。
-        // Default        指定不消除锯齿。
-        // HighQuality 指定高质量、低速度呈现。
-        // HighSpeed   指定高速度、低质量呈现。
-        // Invalid        指定一个无效模式。
-        // None          指定不消除锯齿。
-        grPhoto.SmoothingMode = SmoothingMode.AntiAlias;
-
-        // 第一次描绘，将我们的底图描绘在绘图画面上
-        grPhoto.DrawImage(sourcePicture, new Rectangle(0, 0, phWidth, phHeight), 0, 0, phWidth, phHeight, GraphicsUnit.Pixel);
-        Bitmap bmWatermark = new Bitmap(bmPhoto);
-        // 与底图一样，我们需要一个位图来装载水印图片。并设定其分辨率
-        bmWatermark.SetResolution(sourcePicture.HorizontalResolution, sourcePicture.VerticalResolution);
-
-        // 继续，将水印图片装载到一个绘图画面grWatermark
-        Graphics grWatermark = Graphics.FromImage(waterImage);
-
-        //ImageAttributes 对象包含有关在呈现时如何操作位图和图元文件颜色的信息。
-        ImageAttributes imageAttributes = new ImageAttributes();
-
-        //Colormap: 定义转换颜色的映射
-        ColorMap colorMap = new ColorMap();
-
-        //我的水印图被定义成拥有绿色背景色的图片被替换成透明
-        colorMap.OldColor = Color.FromArgb(255, 0, 255, 0);
-        colorMap.NewColor = Color.FromArgb(0, 0, 0, 0);
-
-        ColorMap[] remapTable = { colorMap };
-
-        imageAttributes.SetRemapTable(remapTable, ColorAdjustType.Bitmap);
-
-        float[][] colorMatrixElements = {
-           new float[] {1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // red红色
-           new float[] {0.0f, 1.0f, 0.0f, 0.0f, 0.0f}, //green绿色
-           new float[] {0.0f, 0.0f, 1.0f, 0.0f, 0.0f}, //blue蓝色
-           new float[] {0.0f, 0.0f, 0.0f, 1f, 0.0f}, //透明度
-           new float[] {0.0f, 0.0f, 0.0f, 0.0f, 1.0f}};//
-
-        // ColorMatrix:定义包含 RGBA 空间坐标的 5 x 5 矩阵。
-        // ImageAttributes 类的若干方法通过使用颜色矩阵调整图像颜色。
-        ColorMatrix wmColorMatrix = new ColorMatrix(colorMatrixElements);
-
-        imageAttributes.SetColorMatrix(wmColorMatrix, ColorMatrixFlag.Default,
-         ColorAdjustType.Bitmap);
-        // 第二次绘图，把水印印上去
-        grWatermark.DrawImage(waterImage, new Rectangle(280, 270, wmWidth, wmHeight), 0, 0, wmWidth, wmHeight, GraphicsUnit.Pixel, imageAttributes);
-
-
-        sourcePicture = bmWatermark;
-        grPhoto.Dispose();
-        grWatermark.Dispose();
-
-        //
-        // 保存文件到服务器的文件夹里面
-        //
-        sourcePicture.Save(targetFilePath, ImageFormat.Jpeg);
     }
 
     private GroupMsgRspVo GetResult()

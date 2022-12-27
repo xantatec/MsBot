@@ -26,6 +26,8 @@ namespace MsBot.Web.Controllers
                 strData = sr.ReadToEndAsync().Result;
             }
 
+            Console.WriteLine(strData);
+
             var result = _botEventHandler.Handle(strData);
             if (!string.IsNullOrEmpty(result))
             {
