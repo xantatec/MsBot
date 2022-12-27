@@ -22,6 +22,7 @@
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_Study_Normal.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_Study_Regex.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_WuShiCalc.cshtml" />
+	  <Content Remove="Templates\Razor\Message\_Groups\_Part_ZhanBu.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_Zou.cshtml" />
 	</ItemGroup>
 
@@ -30,6 +31,9 @@
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Include="Templates\Razor\Message\_Groups\_Part_GuanWang.cshtml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="Templates\Razor\Message\_Groups\_Part_ZhanBu.cshtml">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 		<None Include="Templates\Razor\Message\_Groups\_Part_Zou.cshtml">

@@ -12,7 +12,7 @@
     private String SaveTempImage(string raw_message)
     {
         var imageName = Guid.NewGuid().ToString("N") + ".jpg";
-        RequestHelper.Instance.DownloadFile(raw_message, Model.Config.ImageFolder + "/" + imageName, imageName);
+        RequestHelper.Instance.DownloadFile(raw_message, Model.Config.ImageFolder, imageName);
         return imageName;
     }
 

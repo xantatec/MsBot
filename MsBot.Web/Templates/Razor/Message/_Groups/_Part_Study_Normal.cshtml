@@ -41,7 +41,7 @@
 
         using (var conn = DbHelper.Instance.GetConnection(Model.Config.ConnectionString))
         {
-            conn.Execute("INSERT INTO answer(answer, question, create_id, link)VALUES(@Answer, @Question, @CreateId, @Link)", new
+            conn.Execute("INSERT INTO msg(answer, question, create_id, link)VALUES(@Answer, @Question, @CreateId, @Link)", new
             {
                 Answer = ss,
                 Question = theQuestion,

@@ -234,7 +234,7 @@ public class RequestHelper
     public HtmlDocument HtmlAgilityPack(string url)
     {
         if(string.IsNullOrEmpty(url))
-            return;
+            return null;
 
         HttpWebRequest req = null;
         HttpWebResponse rsp = null;
@@ -242,7 +242,7 @@ public class RequestHelper
         {
             req = (HttpWebRequest)System.Net.WebRequest.Create(url);
             req.Method = "GET";
-            req.AllowAutoRedirect = false;
+            req.AllowAutoRedirect = true;
             rsp = (HttpWebResponse)req.GetResponse();
             var responseStream = rsp.GetResponseStream();
             if(responseStream == null)

@@ -6,16 +6,54 @@
 @using MsBot.Vo.Events.Message;
 @using Dapper;
 @functions {
+    private String SaveTempImage(string raw_message)
+    {
+        var imageName = Guid.NewGuid().ToString("N") + ".jpg";
+        RequestHelper.Instance.DownloadFile(raw_message, Model.Config.ImageFolder, imageName);
+        return imageName;
+    }
+
     private GroupMsgRspVo GetResult()
     {
         var rawMsg = Model.Request.RawMessage;
         var config = Model.Config;
         rawMsg = rawMsg.Replace(config.BotName, "");
+        rawMsg = rawMsg.Replace("官网", "");
+        rawMsg = rawMsg.Trim();
 
-        var url = "http://mxd.sdo.com/web6/news/newsList.asp?wd=" + rawMsg + "&CategoryID=a";
+        var url = "https://mxd.web.sdo.com/web6/news/newsList.asp?wd=" + rawMsg + "&CategoryID=a";
 
         var doc = RequestHelper.Instance.HtmlAgilityPack(url);
-        doc.DocumentNode.SelectNodes("/")
+        var node = doc.DocumentNode.SelectSingleNode("//ul[@class='newList']/li");
+        if(node == null)
+            return new GroupMsgRspVo { Reply = "查询失败", AtSender = true };
+
+        var aNode = node.SelectSingleNode("p/a");
+        var sUrl = "https://mxd.sdo.com/web6" + aNode.Attributes["href"].Value.TrimStart('.');
+        var sTitle = aNode.InnerText;
+        var sDate = node.SelectSingleNode("em");
+        var message = "官网链接：" + sUrl + "\r\n";
+        var sDoc = RequestHelper.Instance.HtmlAgilityPack(sUrl);
+        var sImgNode = sDoc.DocumentNode.SelectSingleNode("//div[@class='innerText']//img");
+        var sTitleNode = sDoc.DocumentNode.SelectSingleNode("//div[@class='innerTitle']//h5");
+        var sDateNode = sDoc.DocumentNode.SelectSingleNode("//div[@class='innerTitle']//p");
+        if(sTitleNode != null)
+            message += "发布标题：" + sTitleNode.InnerText + "\r\n";
+        else
+            message += "发布标题：" + sTitle + "\r\n";
+
+        if(sDateNode != null)
+            message += sDateNode.InnerText;
+        else
+            message += "发布日期：" + sDate == null ? "\r\n" : sDate.InnerText + "\r\n";
+
+        if(sImgNode != null)
+        {
+            var imageName = SaveTempImage(sImgNode.Attributes["src"].Value);
+            message += "[CQ:image,file=" + imageName + "]";
+        }
+
+        return new GroupMsgRspVo { Reply = message, AtSender = true };
     }
 }
 @SetResult(GetResult())

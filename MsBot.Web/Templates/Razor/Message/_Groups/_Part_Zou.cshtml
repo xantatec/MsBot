@@ -12,7 +12,7 @@
     private String SaveTempImage(string raw_message)
     {
         var imageName = Guid.NewGuid().ToString("N") + ".jpg";
-        RequestHelper.Instance.DownloadFile(raw_message, Model.Config.ImageFolder + "/" + imageName, imageName);
+        RequestHelper.Instance.DownloadFile(raw_message, Model.Config.ImageFolder, imageName);
         return imageName;
     }
 
@@ -185,15 +185,15 @@
         {
             var saveTempImage = SaveTempImage("http://q1.qlogo.cn/g?b=qq&nk=" + request.UserId + "&s=3");
             throwSomeone = PunchSomeone(saveTempImage);
-            result.AtSender=false;
-            result.Reply="[CQ:at,qq=" + request.UserId + "]" + throwSomeone;
+            result.AtSender = false;
+            result.Reply = "[CQ:at,qq=" + request.UserId + "]" + throwSomeone;
         }
         else
         {
             String saveTempImage = SaveTempImage("http://q1.qlogo.cn/g?b=qq&nk=" + findNumber + "&s=3");
             throwSomeone = PunchSomeone(saveTempImage);
-            result.AtSender=false;
-            result.Reply="[CQ:at,qq=" + findNumber + "]" + throwSomeone;
+            result.AtSender = false;
+            result.Reply = "[CQ:at,qq=" + findNumber + "]" + throwSomeone;
         }
         return result;
     }
