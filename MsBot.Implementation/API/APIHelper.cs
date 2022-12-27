@@ -22,17 +22,17 @@ namespace MsBot.Implementation.API
         /// <summary>
         /// 发送群消息
         /// </summary>
-        public Result<int> SendGroupMsg(GroupMsgVo groupMsg)
+        public Result<GroupMessageRspVo> SendGroupMsg(GroupMessageReqVo groupMsg)
         {
             var url = CQ_HTTP_URL + "/send_group_msg";
             var strResult = RequestHelper.Instance.WebRequest(url, "POST", parameter: groupMsg);
-            return SerializerHelper.Instance.JsonDeserialize<Result<int>>(strResult);
+            return SerializerHelper.Instance.JsonDeserialize<Result<GroupMessageRspVo>>(strResult);
         }
 
         /// <summary>
         /// 获取群成员列表
         /// </summary>
-        public Result<List<GroupMemberRspVo>> GetGroupMembers(GroupMsgVo groupMsg)
+        public Result<List<GroupMemberRspVo>> GetGroupMembers(GroupMessageReqVo groupMsg)
         {
             var url = CQ_HTTP_URL + "/get_group_member_list";
             var strResult = RequestHelper.Instance.WebRequest(url, "POST", parameter: groupMsg);

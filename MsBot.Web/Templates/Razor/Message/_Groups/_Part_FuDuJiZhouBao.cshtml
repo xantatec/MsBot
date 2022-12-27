@@ -28,10 +28,7 @@
     {
         var request = Model.Request;
         var config = Model.Config;
-        var gp = new GroupMsgVo
-            {
-                GroupId = request.GroupId
-            };
+        var gp = new GroupMessageReqVo { GroupId = request.GroupId };
         var groupMember = APIHelper.Instance.GetGroupMembers(gp);
 
         var data = groupMember.Data;

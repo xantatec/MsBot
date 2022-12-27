@@ -29,91 +29,48 @@
         return resizeBmp;
     }
 
-    /// <summary>
-    /// 添加图片水印
-    /// </summary>
-    /// <param name="sourcePicture">源图片文件名</param>
-    /// <param name="waterImage">水印图片文件名</param>
-    public void DrawImage(Image sourcePicture, Image waterImage, int width, int height, string targetFilePath)
+    public void DrawImage(Bitmap modifyImage, Bitmap drawedImage, int x, int y, string targetFilePath)
     {
-        // 确定其长宽
-        int phWidth = sourcePicture.Width;
-        int phHeight = sourcePicture.Height;
+        Graphics g = null;
+        try
+        {
+            g = Graphics.FromImage(modifyImage);
 
-        // 封装 GDI+ 位图，此位图由图形图像及其属性的像素数据组成。
-        Bitmap bmPhoto = new Bitmap(phWidth, phHeight, PixelFormat.Format24bppRgb);
+            //设置颜色矩阵
+            float[][] matrixItems =
+            {
+                new float[] {1, 0, 0, 0, 0},
+                new float[] {0, 1, 0, 0, 0},
+                new float[] {0, 0, 1, 0, 0},
+                new float[] {0, 0, 0, 1f, 0},
+                new float[] {0, 0, 0, 0, 1}
+            };
 
-        // 设定分辨率
-        bmPhoto.SetResolution(sourcePicture.HorizontalResolution, sourcePicture.VerticalResolution);
+            ColorMatrix colorMatrix = new ColorMatrix(matrixItems);
+            ImageAttributes imgAttr = new ImageAttributes();
+            imgAttr.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
 
-        // 定义一个绘图画面用来装载位图
-        Graphics grPhoto = Graphics.FromImage(bmPhoto);
+            g.DrawImage(//绘制阴影图像
+             drawedImage,
+             new Rectangle(x, y, drawedImage.Width, drawedImage.Height),
+             0, 0, drawedImage.Width, drawedImage.Height,
+             GraphicsUnit.Pixel, imgAttr);
 
-        //同样，由于水印是图片，我们也需要定义一个Image来装载它
-        //
-        // 获取水印图片的高度和宽度
-        //
-        int wmWidth = waterImage.Width;
-        int wmHeight = waterImage.Height;
-
-        //SmoothingMode：指定是否将平滑处理（消除锯齿）应用于直线、曲线和已填充区域的边缘。
-        // 成员名称   说明
-        // AntiAlias      指定消除锯齿的呈现。
-        // Default        指定不消除锯齿。
-        // HighQuality 指定高质量、低速度呈现。
-        // HighSpeed   指定高速度、低质量呈现。
-        // Invalid        指定一个无效模式。
-        // None          指定不消除锯齿。
-        grPhoto.SmoothingMode = SmoothingMode.AntiAlias;
-
-        // 第一次描绘，将我们的底图描绘在绘图画面上
-        grPhoto.DrawImage(sourcePicture, new Rectangle(0, 0, phWidth, phHeight), 0, 0, phWidth, phHeight, GraphicsUnit.Pixel);
-        Bitmap bmWatermark = new Bitmap(bmPhoto);
-        // 与底图一样，我们需要一个位图来装载水印图片。并设定其分辨率
-        bmWatermark.SetResolution(sourcePicture.HorizontalResolution, sourcePicture.VerticalResolution);
-
-        // 继续，将水印图片装载到一个绘图画面grWatermark
-        Graphics grWatermark = Graphics.FromImage(waterImage);
-
-        //ImageAttributes 对象包含有关在呈现时如何操作位图和图元文件颜色的信息。
-        ImageAttributes imageAttributes = new ImageAttributes();
-
-        //Colormap: 定义转换颜色的映射
-        ColorMap colorMap = new ColorMap();
-
-        //我的水印图被定义成拥有绿色背景色的图片被替换成透明
-        colorMap.OldColor = Color.FromArgb(255, 0, 255, 0);
-        colorMap.NewColor = Color.FromArgb(0, 0, 0, 0);
-
-        ColorMap[] remapTable = { colorMap };
-
-        imageAttributes.SetRemapTable(remapTable, ColorAdjustType.Bitmap);
-
-        float[][] colorMatrixElements = {
-           new float[] {1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // red红色
-           new float[] {0.0f, 1.0f, 0.0f, 0.0f, 0.0f}, //green绿色
-           new float[] {0.0f, 0.0f, 1.0f, 0.0f, 0.0f}, //blue蓝色
-           new float[] {0.0f, 0.0f, 0.0f, 1f, 0.0f}, //透明度
-           new float[] {0.0f, 0.0f, 0.0f, 0.0f, 1.0f}};//
-
-        // ColorMatrix:定义包含 RGBA 空间坐标的 5 x 5 矩阵。
-        // ImageAttributes 类的若干方法通过使用颜色矩阵调整图像颜色。
-        ColorMatrix wmColorMatrix = new ColorMatrix(colorMatrixElements);
-
-        imageAttributes.SetColorMatrix(wmColorMatrix, ColorMatrixFlag.Default,
-         ColorAdjustType.Bitmap);
-        // 第二次绘图，把水印印上去
-        grWatermark.DrawImage(waterImage, new Rectangle(width, height, wmWidth, wmHeight), 0, 0, wmWidth, wmHeight, GraphicsUnit.Pixel, imageAttributes);
-
-
-        sourcePicture = bmWatermark;
-        grPhoto.Dispose();
-        grWatermark.Dispose();
-
-        //
-        // 保存文件到服务器的文件夹里面
-        //
-        sourcePicture.Save(targetFilePath, ImageFormat.Jpeg);
+            modifyImage.Save(targetFilePath, ImageFormat.Jpeg);
+            modifyImage.Dispose();
+            drawedImage.Dispose();
+            g.Dispose();
+        }
+        finally
+        {
+            try
+            {
+                drawedImage.Dispose();
+                modifyImage.Dispose();
+                g.Dispose();
+            }
+            catch { }
+        }
     }
 
     public class LuckyTable
@@ -146,41 +103,42 @@
         {
             using(var g = Graphics.FromImage(buffImg))
             {
-                using(var brush = new SolidBrush(Color.White))
-                {
-                    var font = new Font("黑体", 14);
-                    g.FillRectangle(brush, 0, 0, 6000, 6000); //填充整个屏幕
-                    g.DrawImage(buffImg, 32, 32, buffImg.Width, buffImg.Height);
-                    g.DrawString(map["name"], font, brush, 32, 24);
-                    g.DrawString(map["star"], font, brush, 32, 24 * 2);
-                    g.DrawString(map["ch"], font, brush, 32, 24 * 3);
-                    g.DrawString(map["table"], font, brush, 32, 24 * 4);
-                    g.DrawString("//-------------------//", font, brush, 32, 24 * 5);
+                var brush = new SolidBrush(Color.White);
+                var font = new Font("Cascadia Code", 12);
+                g.FillRectangle(brush, 0, 0, 500, 500); //填充整个屏幕
+                brush.Dispose();
+                brush = new SolidBrush(Color.Black);
+                g.DrawImage(buffImg, 32, 32, buffImg.Width, buffImg.Height);
+                g.DrawString(map["name"], font, brush, 32, 24);
+                g.DrawString(map["star"], font, brush, 32, 24 * 2);
+                g.DrawString(map["ch"], font, brush, 32, 24 * 3);
+                g.DrawString(map["table"], font, brush, 32, 24 * 4);
+                g.DrawString("//-------------------//", font, brush, 32, 24 * 5);
 
-                    var split = map["gThing"].Split('\n');
+                var split = map["gThing"].Split('\n');
 
-                    g.DrawString(split[0], font, brush, 32, 24 * 6);
-                    g.DrawString(split[1], font, brush, 32, 24 * 7);
-                    g.DrawString("//-------------------//", font, brush, 32, 24 * 8);
-                    split = map["bThing"].Split('\n');
-                    g.DrawString(split[0], font, brush, 32, 24 * 9);
-                    g.DrawString(split[1], font, brush, 32, 24 * 10);
-                    g.DrawString("//-------------------//", font, brush, 32, 24 * 11);
-                    g.DrawString("今日最佳玄学地图是：", font, brush, 32, 24 * 12);
-                    g.DrawString(map["map"], font, brush, 32, 24 * 13);
-                    var mapUrl = map["mapUrl"];
+                g.DrawString(split[0], font, brush, 32, 24 * 6);
+                g.DrawString(split[1], font, brush, 32, 24 * 7);
+                g.DrawString("//-------------------//", font, brush, 32, 24 * 8);
+                split = map["bThing"].Split('\n');
+                g.DrawString(split[0], font, brush, 32, 24 * 9);
+                g.DrawString(split[1], font, brush, 32, 24 * 10);
+                g.DrawString("//-------------------//", font, brush, 32, 24 * 11);
+                g.DrawString("今日最佳玄学地图是：", font, brush, 32, 24 * 12);
+                g.DrawString(map["map"], font, brush, 32, 24 * 13);
+                var mapUrl = map["mapUrl"];
 
 
-                    mapUrl = mapUrl.Substring(mapUrl.IndexOf("save"), mapUrl.Length - 1);
-                    var mapFilePath = Model.Config.ImageFolder + mapUrl;
-                    mapFilePath = mapFilePath.Replace("\\", "/");
-                    var mapFile = new Bitmap(mapFilePath);
-                    mapFile = PicResize(mapFile, 250, 170);
-                    var uuid = Guid.NewGuid().ToString("N");
-                    var saveFilePath = Model.Config.ImageFolder + uuid + ".png";
-                    DrawImage(buffImg, mapFile, 32, 24 * 13 + 10, saveFilePath);
-                    return "[CQ:image,file=" + uuid + ".jpg]";
-                }
+                mapUrl = mapUrl.Substring(mapUrl.IndexOf("save"), mapUrl.Length - 1 - mapUrl.IndexOf("save"));
+                var mapFilePath = Model.Config.ImageFolder + mapUrl;
+                mapFilePath = mapFilePath.Replace("\\", "/");
+                var mapFile = new Bitmap(mapFilePath);
+                mapFile = PicResize(mapFile, 220, 150);
+                var uuid = Guid.NewGuid().ToString("N");
+                var saveFilePath = Model.Config.ImageFolder + uuid + ".png";
+                DrawImage(buffImg, mapFile, 270, 24 * 13 + 10, saveFilePath);
+                brush.Dispose();
+                return "[CQ:image,file=" + uuid + ".jpg]";
             }
         }
     }

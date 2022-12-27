@@ -41,9 +41,9 @@
                     int x1 = 65;
                     int x2 = 382;
                     int x3 = 687;
-                    int y1 = 70;
-                    int y2 = 288;
-                    var font = new Font("黑体", 16);
+                    int y1 = 55;
+                    int y2 = 275;
+                    var font = new Font("Cascadia Code", 10);
                     g.DrawString("基本数据", font, brush, x1,y1);
                     g.DrawString("超高防对比", font, brush, x1, y2);
                     g.DrawString("高防对比", font, brush, x2, y2);
@@ -168,7 +168,7 @@ VALUES(@user_id, @name, @group_id, @common_dmg, @boss_dmg)";
 
                 conn.Execute(sql, roleDmg);
 
-                APIHelper.Instance.SendGroupMsg(new GroupMsgVo
+                APIHelper.Instance.SendGroupMsg(new GroupMessageReqVo
                 {
                     GroupId=request.GroupId,
                     Message = "[CQ:at,qq=" + request.Sender.UserId + "]" + "未查询到角色信息，默认伤害100,boss伤200。你可通过指令【" + config.BotName+ " 伤害50 boss300】命令修改角色信息"

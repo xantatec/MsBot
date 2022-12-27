@@ -29,7 +29,7 @@
             return new GroupMsgRspVo { Reply = "查询失败", AtSender = true };
 
         var aNode = node.SelectSingleNode("p/a");
-        var sUrl = "https://mxd.sdo.com/web6" + aNode.Attributes["href"].Value.TrimStart('.');
+        var sUrl = "http://mxd.sdo.com/web6" + aNode.Attributes["href"].Value.TrimStart('.');
         var sTitle = aNode.InnerText;
         var sDate = node.SelectSingleNode("em");
         var message = "官网链接：" + sUrl + "\r\n";

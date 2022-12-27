@@ -9,11 +9,12 @@
 @using MsBot.Infrastructure;
 @using Dapper;
 @using System.Text;
+@using System.IO;
 @functions {
     public class MobName
     {
         public long Id { get; set; }
-        public string MobId { get; set; }
+        public string Mob_Id { get; set; }
         public string Name { get; set; }
     }
     public class MobInfo
@@ -46,9 +47,10 @@
         var rawMsg = Model.Request.RawMessage;
         rawMsg = Regex.Replace(rawMsg, "&#91;", "[");
         rawMsg = Regex.Replace(rawMsg, "&#93;", "]");
+        rawMsg = rawMsg.Substring(rawMsg.IndexOf("怪物") + 2);
         using(var conn = DbHelper.Instance.GetConnection(Model.Config.ConnectionString))
         {
-            var mobNameList = conn.Query<MobName>("SELECT id, mob_id, [name] FROM mob_name WHERE name = @Name order by mob_id", new
+            var mobNameList = conn.Query<MobName>("SELECT id, mob_id, `name` FROM mob_name WHERE name = @Name order by mob_id", new
             {
                 Name = rawMsg
             }).ToList();
@@ -63,40 +65,45 @@
                     };
             }
             var j = 0;
+            var valids = new List<MobName>();
             foreach(var mobName in mobNameList)
             {
                 var mobInfo = conn.QueryFirstOrDefault<MobInfo>("SELECT * FROM mob_info WHERE mob_id = @MobId", new
                 {
-                    MobId = mobName.MobId
+                    MobId = mobName.Mob_Id
                 });
 
+                if(mobInfo == null)
+                    continue;
+
+                valids.Add(mobName);
                 if(!string.IsNullOrEmpty(mobInfo.link))
                 {
                     var url = Path.Combine(Model.Config.ImageFolder, "result_img", mobInfo.link + ".img", mobInfo.link + ".img");
-                    var fi = new FileInfo(url);
-                    if(fi.Exists)
+                    var fi = new DirectoryInfo(url);
+                    if(fi.Exists && fi.GetFiles().Length > 0)
                     {
                         sb.Append("[CQ:image,file=result_img/")
                             .Append(mobInfo.link)
                             .Append(".img/")
                             .Append(mobInfo.link)
                             .Append(".img/")
-                            .Append(fi.Name)
+                            .Append(fi.GetFiles()[0].Name)
                             .Append("]");
                         break;
                     }
                 }
 
-                var imgUrl = Model.Config.ImageFolder + "result_img/" + mobName.MobId + ".img/" + mobName.MobId + ".img";
-                var imgFi = new FileInfo(imgUrl);
-                if(imgFi.Exists)
+                var imgUrl = Model.Config.ImageFolder + "result_img/" + mobName.Mob_Id + ".img/" + mobName.Mob_Id + ".img";
+                var imgFi = new DirectoryInfo(imgUrl);
+                if(imgFi.Exists && imgFi.GetFiles().Length > 0)
                 {
                     sb.Append("[CQ:image,file=result_img/")
-                            .Append(mobName.MobId)
+                            .Append(mobName.Mob_Id)
                             .Append(".img/")
-                            .Append(mobName.MobId)
+                            .Append(mobName.Mob_Id)
                             .Append(".img/")
-                            .Append(imgFi.Name)
+                            .Append(imgFi.GetFiles()[0].Name)
                             .Append("]");
                     break;
                 }
@@ -108,10 +115,10 @@
 
             var fMob = conn.QueryFirstOrDefault<MobInfo>("SELECT * FROM mob_info WHERE mob_id = @MobId", new
             {
-                MobId = mobNameList[j].MobId
+                MobId = valids[j].Mob_Id
             });
 
-            sb.Append(Environment.NewLine).Append(mobNameList[j].Name).Append("(").Append(mobNameList[j].MobId).Append(")");
+            sb.Append(Environment.NewLine).Append(valids[j].Name).Append("(").Append(valids[j].Mob_Id).Append(")");
             if(fMob.boss == null)
                 sb.Append(Environment.NewLine).Append("怪物类型:普通怪");
             else
@@ -142,17 +149,18 @@
                 int index = 0;
                 while(index < attr.Length)
                 {
+                    var ttt = attr.Substring(index, 1);
                     if(attr.Substring(index + 1, 1) == "1")
                     {
-                        attrMap.Add(attr.Substring(index, 1), "×");
+                        attrMap[ttt] = "×";
                     }
                     else if(attr.Substring(index + 1, 1) == "2")
                     {
-                        attrMap.Add(attr.Substring(index, 1), "△");
+                        attrMap[ttt] = "△";
                     }
                     else if(attr.Substring(index + 1, 1) == "3")
                     {
-                        attrMap.Add(attr.Substring(index, 1), "◎");
+                        attrMap[ttt] = "◎";
                     }
                     index += 2;
                 }
@@ -164,21 +172,21 @@
                 .Append(attrMap["D"])
                 .Append(attrMap["P"]);
             }
-            APIHelper.Instance.SendGroupMsg(new GroupMsgVo
-            {
-                GroupId = Model.Request.GroupId,
-                Message = sb.ToString()
-            });
+            APIHelper.Instance.SendGroupMsg(new GroupMessageReqVo
+                {
+                    GroupId = Model.Request.GroupId,
+                    Message = sb.ToString()
+                });
 
             if(mobNameList.Count >= 2)
             {
                 var reply = "查询到同名的怪物有：";
-                reply += Environment.NewLine + string.Join(Environment.NewLine, mobNameList.Select(mn => mn.Name + "(" + mn.MobId + ")"));
-                APIHelper.Instance.SendGroupMsg(new GroupMsgVo
-                {
-                    GroupId = Model.Request.GroupId,
-                    Message = reply
-                });
+                reply += Environment.NewLine + string.Join(Environment.NewLine, mobNameList.Select(mn => mn.Name + "(" + mn.Mob_Id + ")"));
+                APIHelper.Instance.SendGroupMsg(new GroupMessageReqVo
+                    {
+                        GroupId = Model.Request.GroupId,
+                        Message = reply
+                    });
             }
         }
         return null;

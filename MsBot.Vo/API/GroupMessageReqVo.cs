@@ -2,7 +2,7 @@
 
 namespace MsBot.Vo.API;
 
-public class GroupMsgVo
+public class GroupMessageReqVo
 {
     /// <summary>
     /// 群号
@@ -13,7 +13,7 @@ public class GroupMsgVo
     /// <summary>
     /// 消息
     /// </summary>
-    [JsonProperty("group_id")]
+    [JsonProperty("message")]
     public string Message { get; set; }
 
     /// <summary>
