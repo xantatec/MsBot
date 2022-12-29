@@ -41,99 +41,13 @@
         }
         return dp[A.Length, B.Length];
     }
-}
-@{
-    var request = Model.Request;
-    var config = Model.Config;
-    var rawMsg = request.RawMessage;
-}
-@if(rawMsg.StartsWith(config.BotName))
-{
-    if(rawMsg.Contains("逆推"))
+
+    public bool SimilarSearch()
     {
-        await IncludeAsync("Message/_Groups/_Part_NiTui", Model);
-    }
-    else if(rawMsg.ToLower().Contains("roll"))
-    {
-        await IncludeAsync("Message/_Groups/_Part_RollDian", Model);
-    }
-    else if(
-        rawMsg.StartsWith(config.BotName + "学习")
-        &&
-        config.BotMaster.Contains(request.UserId.ToString())
-        &&
-        rawMsg.Contains("答")
-    )
-    {
-        if(rawMsg.Contains("布尔问"))
-        {
-            await IncludeAsync("Message/_Groups/_Part_Study_Bool", Model);
-        }
-        else if(rawMsg.Contains("正则问"))
-        {
-            await IncludeAsync("Message/_Groups/_Part_Study_Regex", Model);
-        }
-        else if(rawMsg.Contains("问"))
-        {
-            await IncludeAsync("Message/_Groups/_Part_Study_Normal", Model);
-        }
-    }
-    else if(
-        (rawMsg.StartsWith(config.BotName + "查询") || rawMsg.StartsWith(config.BotName + " 查询"))
-        &&
-        config.BotMaster.Contains(request.UserId.ToString())
-    )
-    {
-        await IncludeAsync("Message/_Groups/_Part_SearchQuestion", Model);
-    }
-    else if(
-        (rawMsg.StartsWith(config.BotName + "删除问题") || rawMsg.StartsWith(config.BotName + " 删除问题"))
-        &&
-        config.BotMaster.Contains(request.UserId.ToString())
-    )
-    {
-        await IncludeAsync("Message/_Groups/_Part_DeleteQuestion", Model);
-    }
-    else if(rawMsg.StartsWith(config.BotName + "怪物") || rawMsg.StartsWith(config.BotName + " 怪物"))
-    {
-        await IncludeAsync("Message/_Groups/_Part_SearchMob", Model);
-    }
-    else if(rawMsg.Contains("无视") && (rawMsg.Contains("+") || rawMsg.Contains("-")))
-    {
-        await IncludeAsync("Message/_Groups/_Part_WuShiCalc", Model);
-    }
-    else if(rawMsg.Contains("复读机周报"))
-    {
-        await IncludeAsync("Message/_Groups/_Part_FuDuJiZhouBao", Model);
-    }
-    else if(rawMsg.StartsWith(config.BotName + "扔") && rawMsg.Contains("[CQ:at"))
-    {
-        await IncludeAsync("Message/_Groups/_Part_Reng", Model);
-    }
-    else if((rawMsg.StartsWith(config.BotName + "揍") || rawMsg.StartsWith(config.BotName + "打")) && rawMsg.Contains("[CQ:at"))
-    {
-        await IncludeAsync("Message/_Groups/_Part_Zou", Model);
-    }
-    else if(rawMsg.StartsWith(config.BotName + "官网") || rawMsg.StartsWith(config.BotName + " 官网"))
-    {
-        await IncludeAsync("Message/_Groups/_Part_GuanWang", Model);
-    }
-    else if(
-        rawMsg.StartsWith(config.BotName + "抽签")
-        ||
-        rawMsg.StartsWith(config.BotName + "运势")
-        ||
-        rawMsg.StartsWith(config.BotName + "占卜")
-    )
-    {
-        await IncludeAsync("Message/_Groups/_Part_ZhanBu", Model);
-    }
-    else if(rawMsg.Contains("x") || rawMsg.Contains("+") || rawMsg.Contains("-") || rawMsg.Contains("*") || rawMsg.Contains("/") || rawMsg.Contains("÷"))
-    {
-        await IncludeAsync("Message/_Groups/_Part_Calc", Model);
-    }
-    else
-    {
+        var request = Model.Request;
+        var config = Model.Config;
+        var rawMsg = request.RawMessage;
+
         List<Msg> list = null;
         var rep = new List<Msg>();
         var command = rawMsg.Substring(config.BotName.Length);
@@ -141,7 +55,7 @@
         {
             list = conn.Query<Msg>("SELECT * FROM msg WHERE question LIKE CONCAT('%', @Question,'%')", new { Question = command }).ToList();
         }
-        
+
         if(list.Count > 0)
         {
             //默认相似度
@@ -169,7 +83,7 @@
             if(msg2.Link == null)
             {
                 result.Reply = msg2.Answer;
-                @SetResult(result);
+                Write(SetResult(result));
             }
             else
             {
@@ -184,11 +98,128 @@
                     APIHelper.Instance.SendGroupMsg(groupMsg);
                 }
             }
+            return true;
         }
-        else
-        {
-            var rnd = RandomHelper.Instance.RandomInt(1, 5);
-            @SetResult(new GroupMsgRspVo { Reply = "[CQ:image,file=img/buzhidao" + rnd + ".gif]" });
-        }
+        return false;
     }
+
+    public async void GetResult()
+    {
+        var request = Model.Request;
+        var config = Model.Config;
+        var rawMsg = request.RawMessage;
+
+        if (!rawMsg.StartsWith(config.BotName))
+            return;
+
+        if(rawMsg.Contains("逆推"))
+        {
+            await IncludeAsync("Message/_Groups/_Part_NiTui", Model);
+            return;
+        }
+        if(rawMsg.ToLower().Contains("roll"))
+        {
+            await IncludeAsync("Message/_Groups/_Part_RollDian", Model);
+            return;
+        }
+        if(
+            rawMsg.StartsWith(config.BotName + "学习")
+            &&
+            config.BotMaster.Contains(request.UserId.ToString())
+            &&
+            rawMsg.Contains("答")
+        )
+        {
+            if(rawMsg.Contains("布尔问"))
+            {
+                await IncludeAsync("Message/_Groups/_Part_Study_Bool", Model);
+                return;
+            }
+            else if(rawMsg.Contains("正则问"))
+            {
+                await IncludeAsync("Message/_Groups/_Part_Study_Regex", Model);
+                return;
+            }
+            else if(rawMsg.Contains("问"))
+            {
+                await IncludeAsync("Message/_Groups/_Part_Study_Normal", Model);
+                return;
+            }
+        }
+        if(
+            (rawMsg.StartsWith(config.BotName + "查询") || rawMsg.StartsWith(config.BotName + " 查询"))
+            &&
+            config.BotMaster.Contains(request.UserId.ToString())
+        )
+        {
+            await IncludeAsync("Message/_Groups/_Part_SearchQuestion", Model);
+            return;
+        }
+        if(
+            (rawMsg.StartsWith(config.BotName + "删除问题") || rawMsg.StartsWith(config.BotName + " 删除问题"))
+            &&
+            config.BotMaster.Contains(request.UserId.ToString())
+        )
+        {
+            await IncludeAsync("Message/_Groups/_Part_DeleteQuestion", Model);
+            return;
+        }
+        if(rawMsg.StartsWith(config.BotName + "怪物") || rawMsg.StartsWith(config.BotName + " 怪物"))
+        {
+            await IncludeAsync("Message/_Groups/_Part_SearchMob", Model);
+            return;
+        }
+        if(rawMsg.Contains("无视") && (rawMsg.Contains("+") || rawMsg.Contains("-")))
+        {
+            await IncludeAsync("Message/_Groups/_Part_WuShiCalc", Model);
+            return;
+        }
+        if(rawMsg.Contains("复读机周报"))
+        {
+            await IncludeAsync("Message/_Groups/_Part_FuDuJiZhouBao", Model);
+            return;
+        }
+        if(rawMsg.StartsWith(config.BotName + "扔") && rawMsg.Contains("[CQ:at"))
+        {
+            await IncludeAsync("Message/_Groups/_Part_Reng", Model);
+            return;
+        }
+        if((rawMsg.StartsWith(config.BotName + "揍") || rawMsg.StartsWith(config.BotName + "打")) && rawMsg.Contains("[CQ:at"))
+        {
+            await IncludeAsync("Message/_Groups/_Part_Zou", Model);
+            return;
+        }
+        if(rawMsg.StartsWith(config.BotName + "官网") || rawMsg.StartsWith(config.BotName + " 官网"))
+        {
+            await IncludeAsync("Message/_Groups/_Part_GuanWang", Model);
+            return;
+        }
+        if(
+            rawMsg.StartsWith(config.BotName + "抽签")
+            ||
+            rawMsg.StartsWith(config.BotName + "运势")
+            ||
+            rawMsg.StartsWith(config.BotName + "占卜")
+        )
+        {
+            await IncludeAsync("Message/_Groups/_Part_ZhanBu", Model);
+            return;
+        }
+        if(rawMsg.Contains("x") || rawMsg.Contains("+") || rawMsg.Contains("-") || rawMsg.Contains("*") || rawMsg.Contains("/") || rawMsg.Contains("÷"))
+        {
+            await IncludeAsync("Message/_Groups/_Part_Calc", Model);
+            return;
+        }
+
+        var hasHit = SimilarSearch();
+        if(hasHit)
+            return;
+
+        //随机回复
+        var rnd = RandomHelper.Instance.RandomInt(1, 5);
+        Write(SetResult(new GroupMsgRspVo { Reply = "[CQ:image,file=img/buzhidao" + (rnd < 3 ? ".gif]" : ".png]") }));
+    }
+}
+@{
+    GetResult();
 }

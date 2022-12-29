@@ -1,0 +1,83 @@
+﻿@inherits TemplatePage<MsBotModel<GroupMsgReqVo>>
+@using MsBot.Implementation.API;
+@using MsBot.Implementation.MySql;
+@using MsBot.Implementation.Template;
+@using MsBot.Implementation.Template.Razor;
+@using MsBot.Vo.API;
+@using MsBot.Vo.Events.Message;
+@using Dapper;
+@functions {
+    public class RereadSentence
+    {
+        public long id { get; set; }
+        public string message { get; set; }
+        public string user_id { get; set; }
+        public int read_time { get; set; }
+        public string group_id { get; set; }
+    }
+
+    public class RereadTime
+    {
+        public long id { get; set; }
+        public String user_id { get; set; }
+        public String group_id { get; set; }
+        public int count { get; set; }
+    }
+
+    private GroupMsgRspVo GetResult()
+    {
+        var request = Model.Request;
+        var config = Model.Config;
+        var gp = new GroupMessageReqVo { GroupId = request.GroupId };
+        var groupMember = APIHelper.Instance.GetGroupMembers(gp);
+
+        var data = groupMember.Data;
+
+        var map = new Dictionary<string, string>();
+        foreach(var temp in data)
+        {
+            if(string.IsNullOrEmpty(temp.Card)) //无群名片
+                map.Add(temp.UserId.ToString(), temp.NickName);
+            else //有群名片
+                map.Add(temp.UserId.ToString(), temp.Card);
+        }
+        using(var conn = DbHelper.Instance.GetConnection(Model.Config.ConnectionString))
+        {
+            var message = "本周最长的复读长龙是：\r\n";
+            var sql = "SELECT * FROM reread_sentence WHERE group_id = @GroupId LIMIT 0,1";
+            var rereadSentence = conn.QueryFirstOrDefault<RereadSentence>(sql, new { GroupId = request.GroupId });
+            if(rereadSentence != null)
+            {
+                message += rereadSentence.message + "\r\n" + "此金句出自———————" + map[rereadSentence.user_id] + "\r\n" + "当时被复读机们连续复读了" + rereadSentence.read_time + "次！\r\n";
+                sql = "SELECT * FROM reread_time WHERE group_id = @GroupId ORDER BY COUNT DESC LIMIT 0,3";
+                var list = conn.Query<RereadTime>(sql, new { GroupId = request.GroupId }).ToList();
+                if(list != null && list.Count > 0)
+                {
+                    message += "——————————————————\r\n" + "本周最佳复读机的称号授予" + map[list[0].user_id] + "！\r\n" + "他在过去的一周里疯狂复读" + list[0].count + "次！简直太丧病了。\r\n" + "——————————————————\r\n" + "此外，以下两名成员获得了亚军和季军，也是非常优秀的复读机：\r\n";
+                    if(list.Count > 1)
+                        message += map[list[1].user_id] + " 复读次数：" + list[1].count + "\r\n";
+                    else
+                        message += "虚位以待\r\n";
+
+                    if(list.Count > 2)
+                        message += map[list[2].user_id] + " 复读次数：" + list[2].count + "\r\n";
+                    else
+                        message += "虚位以待\r\n";
+
+                    message += "为了成为最佳复读机，努力复读吧！uwu";
+                }
+                else
+                    message = "owo,本群没有复读机。";
+            }
+            else
+                message = "owo,本群没有复读机";
+
+            return new GroupMsgRspVo
+                {
+                    Reply = message,
+                    AtSender = false
+                };
+        }
+    }
+}
+@SetResult(GetResult())
