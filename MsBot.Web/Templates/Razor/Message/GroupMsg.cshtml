@@ -1,8 +1,47 @@
 ﻿@inherits TemplatePage<MsBotModel<GroupMsgReqVo>>
+@using MsBot.Implementation.API;
+@using MsBot.Implementation.MySql;
 @using MsBot.Implementation.Template;
 @using MsBot.Implementation.Template.Razor;
 @using MsBot.Infrastructure;
+@using MsBot.Vo.API;
 @using MsBot.Vo.Events.Message;
+@using Dapper;
+@using System.Threading;
+@functions {
+    public class Msg
+    {
+        public long Id { get; set; }
+        public string Answer { get; set; }
+        public string Question { get; set; }
+        public string CreateId { get; set; }
+        public string Link { get; set; }
+    }
+
+    public static int GetMsgResult(string A, string B)
+    {
+        if(A == B)
+            return 0;
+
+        //dp[i][j]表示源串A位置i到目标串B位置j处最低需要操作的次数
+        var dp = new int[A.Length + 1, B.Length + 1];
+        for(int i = 1; i <= A.Length; i++)
+            dp[i, 0] = i;
+        for(int j = 1; j <= B.Length; j++)
+            dp[0, j] = j;
+        for(int i = 1; i <= A.Length; i++)
+        {
+            for(int j = 1; j <= B.Length; j++)
+            {
+                if(A[i - 1] == B[j - 1])
+                    dp[i, j] = dp[i - 1, j - 1];
+                else
+                    dp[i, j] = Math.Min(dp[i - 1, j] + 1, Math.Min(dp[i, j - 1] + 1, dp[i - 1, j - 1] + 1));
+            }
+        }
+        return dp[A.Length, B.Length];
+    }
+}
 @{
     var request = Model.Request;
     var config = Model.Config;
@@ -89,9 +128,67 @@
     {
         await IncludeAsync("Message/_Groups/_Part_ZhanBu", Model);
     }
+    else if(rawMsg.Contains("x") || rawMsg.Contains("+") || rawMsg.Contains("-") || rawMsg.Contains("*") || rawMsg.Contains("/") || rawMsg.Contains("÷"))
+    {
+        await IncludeAsync("Message/_Groups/_Part_Calc", Model);
+    }
     else
     {
-        var rnd = RandomHelper.Instance.RandomInt(1, 5);
-        SetResult(new GroupMsgRspVo { Reply = "[CQ:image,file=img/buzhidao" + rnd + ".gif]" });
+        List<Msg> list = null;
+        var rep = new List<Msg>();
+        var command = rawMsg.Substring(config.BotName.Length);
+        using(var conn = DbHelper.Instance.GetConnection(config.ConnectionString))
+        {
+            list = conn.Query<Msg>("SELECT * FROM msg WHERE question LIKE CONCAT('%', @Question,'%')", new { Question = command }).ToList();
+        }
+        
+        if(list.Count > 0)
+        {
+            //默认相似度
+            var similar = 100;
+            //遍历list
+            foreach(Msg tempMsg in list)
+            {
+                //查看相似度
+                int similarity = GetMsgResult(tempMsg.Question, command);
+                //比较相似度 如果更相似 放入变量
+                if(similarity < similar)
+                {
+                    similar = similarity;
+                    rep.Clear();
+                    rep.Add(tempMsg);
+                }
+                if(similarity == similar)
+                {
+                    rep.Add(tempMsg);
+                }
+            }
+            var random = RandomHelper.Instance.RandomInt(rep.Count);
+            var msg2 = rep[random];
+            var result = new GroupMsgRspVo();
+            if(msg2.Link == null)
+            {
+                result.Reply = msg2.Answer;
+                @SetResult(result);
+            }
+            else
+            {
+                var groupMsg = new GroupMessageReqVo { GroupId = request.GroupId, AutoEscape = false };
+
+                groupMsg.Message = msg2.Answer;
+                APIHelper.Instance.SendGroupMsg(groupMsg);
+                var split = msg2.Link.Split("#abcde#");
+                foreach(var temp in split)
+                {
+                    groupMsg.Message = temp;
+                    APIHelper.Instance.SendGroupMsg(groupMsg);
+                }
+            }
+        }
+        else
+        {
+            var rnd = RandomHelper.Instance.RandomInt(1, 5);
+            @SetResult(new GroupMsgRspVo { Reply = "[CQ:image,file=img/buzhidao" + rnd + ".gif]" });
+        }
     }
 }

@@ -1,0 +1,23 @@
+﻿@inherits TemplatePage<MsBotModel<GroupMsgReqVo>>
+@using Flee.PublicTypes;
+@using MsBot.Implementation.MySql;
+@using MsBot.Implementation.Template;
+@using MsBot.Implementation.Template.Razor;
+@using MsBot.Vo.Events.Message;
+@using Dapper;
+@functions {
+    private GroupMsgRspVo GetResult()
+    {
+        var request = Model.Request;
+        var config = Model.Config;
+        var rawMsg = request.RawMessage;
+        rawMsg = rawMsg.Replace("×", "*");
+        rawMsg = rawMsg.Replace("÷", "/");
+        var context = new ExpressionContext();
+        context.Imports.AddType(typeof(Math));
+        var eDynamic = context.CompileDynamic(rawMsg.Substring(rawMsg.IndexOf(config.BotName) + config.BotName.Length));
+        var result = eDynamic.Evaluate();
+        return new GroupMsgRspVo { Reply = result.ToString(), AtSender = true };
+    }
+}
+@SetResult(GetResult())
