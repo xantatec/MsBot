@@ -23,12 +23,12 @@ public abstract class EventAction
         where TRequest : BaseReqVo
     {
         var request = reqObj.ToObject<TRequest>();
-        if (request == null)
+        if(request == null)
             return string.Empty;
 
         var filePath = $"{PostType}/{request.Template}";
 
-        if (BotConfig.RenderEngine == "Razor")
+        if(BotConfig.RenderEngine == "Razor")
         {
             var model = new MsBotModel<TRequest>
             {
@@ -37,7 +37,7 @@ public abstract class EventAction
             };
             return Engine.CompileRenderAsync(filePath, model).Result;
         }
-        else if (BotConfig.RenderEngine == "NVelocity")
+        else if(BotConfig.RenderEngine == "NVelocity")
         {
             var engine = NVelocityEngine.Create(filePath);
             var templatePath = Path.Combine(filePath, request.Template + ".vm");

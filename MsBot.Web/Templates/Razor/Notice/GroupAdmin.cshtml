@@ -1,0 +1,27 @@
+﻿@inherits TemplatePage<MsBotModel<GroupAdminNoticeReqVo>>
+@using MsBot.Implementation.API;
+@using MsBot.Implementation.MySql;
+@using MsBot.Implementation.Template;
+@using MsBot.Implementation.Template.Razor;
+@using MsBot.Infrastructure;
+@using MsBot.Vo.API;
+@using MsBot.Vo.Events.Message;
+@using Dapper;
+@using System.Threading;
+@using MsBot.Vo.Events.Notice;
+@{
+    var request = Model.Request;
+    var config = Model.Config;
+    if (request.SubType == GroupAdminNoticeSubTypeVo.Set)
+    {
+        var groupMsg = new GroupMessageReqVo { GroupId = request.GroupId, AutoEscape = false };
+        groupMsg.Message = "哟~当管理员了？让我们恭喜这个B！";
+        APIHelper.Instance.SendGroupMsg(groupMsg);
+    }
+    else if (request.SubType == GroupAdminNoticeSubTypeVo.UnSet)
+    {
+        var groupMsg = new GroupMessageReqVo { GroupId = request.GroupId, AutoEscape = false };
+        groupMsg.Message = "哟~卸任了？感谢大佬的在位期间的付出！";
+        APIHelper.Instance.SendGroupMsg(groupMsg);
+    }
+}

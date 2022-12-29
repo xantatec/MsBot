@@ -1,0 +1,49 @@
+﻿@inherits TemplatePage<MsBotModel<GroupMemberChangeNoticeReqVo>>
+@using MsBot.Implementation.API;
+@using MsBot.Implementation.MySql;
+@using MsBot.Implementation.Template;
+@using MsBot.Implementation.Template.Razor;
+@using MsBot.Infrastructure;
+@using MsBot.Vo.API;
+@using MsBot.Vo.Events.Message;
+@using Dapper;
+@using System.Threading;
+@using MsBot.Vo.Events.Notice;
+@using Dapper;
+@functions {
+    public class Msg
+    {
+        public long Id { get; set; }
+        public string Answer { get; set; }
+        public string Question { get; set; }
+        public string CreateId { get; set; }
+        public string Link { get; set; }
+    }
+}
+@{
+    var request = Model.Request;
+    var config = Model.Config;
+    if (request.SubType == GroupMemberChangeNoticeSubType.Leave)
+    {
+        var groupMsg = new GroupMessageReqVo { GroupId = request.GroupId, AutoEscape = false };
+        groupMsg.Message = "[CQ:image,file=img/leave.png]\r\n退出QQ：" + request.UserId;
+        APIHelper.Instance.SendGroupMsg(groupMsg);
+    }
+    else if (request.SubType == GroupMemberChangeNoticeSubType.Approve)
+    {
+        using (var conn = DbHelper.Instance.GetConnection(Model.Config.ConnectionString))
+        {
+            var list = conn.Query<Msg>("SELECT * FROM msg WHERE question = @Question", new { Question = "固定回复welcome" }).ToList();
+            var random = RandomHelper.Instance.RandomInt(list.Count - 1);
+            var groupMsg = new GroupMessageReqVo { GroupId = request.GroupId, AutoEscape = false };
+            groupMsg.Message = list[random].Answer;
+            APIHelper.Instance.SendGroupMsg(groupMsg);
+        }
+    }
+    else if (request.SubType == GroupMemberChangeNoticeSubType.Kick)
+    {
+        var groupMsg = new GroupMessageReqVo { GroupId = request.GroupId, AutoEscape = false };
+        groupMsg.Message = "[CQ:image,file=img/leave.png]\r\n被踢QQ：" + request.UserId;
+        APIHelper.Instance.SendGroupMsg(groupMsg);
+    }
+}

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MsBot.Vo.Plugins;
+using Newtonsoft.Json;
 
 namespace MsBot.Vo.Events.Notice;
 
@@ -10,7 +11,7 @@ public class GroupAdminNoticeReqVo : NoticeReqVo
     /// <summary>
     /// 事件子类型
     /// </summary>
-    [JsonProperty("sub_type")]
+    [JsonProperty("sub_type"), JsonConverter(typeof(MsBotEnumConverter))]
     public GroupAdminNoticeSubTypeVo SubType { get; set; }
 
     /// <summary>
@@ -34,11 +35,11 @@ public enum GroupAdminNoticeSubTypeVo
     /// 设置
     /// </summary>
     [JsonProperty("set")]
-    set,
+    Set,
 
     /// <summary>
     /// 取消
     /// </summary>
     [JsonProperty("unset")]
-    unset
+    UnSet
 }

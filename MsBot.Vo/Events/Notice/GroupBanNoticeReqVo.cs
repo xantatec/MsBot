@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MsBot.Vo.Plugins;
+using Newtonsoft.Json;
 
 namespace MsBot.Vo.Events.Notice;
 
@@ -25,6 +26,11 @@ public class GroupBanNoticeReqVo : NoticeReqVo
     [JsonProperty("operator_id")]
     public long OperatorId { get; set; }
 
+    /// <summary>
+    /// 子类型
+    /// </summary>
+    [JsonProperty("sub_type"), JsonConverter(typeof(MsBotEnumConverter))]
+    public GroupBanNoticeSubType SubType { get; set; }
 
     /// <summary>
     /// 禁言时长, 单位秒
@@ -33,4 +39,19 @@ public class GroupBanNoticeReqVo : NoticeReqVo
     public long Duration { get; set; }
 
     public override string Template => "GroupBan";
+}
+
+public enum GroupBanNoticeSubType
+{
+    /// <summary>
+    /// 禁言
+    /// </summary>
+    [JsonProperty("ban")]
+    Ban,
+    
+    /// <summary>
+    /// 解除禁言
+    /// </summary>
+    [JsonProperty("lift_ban")]
+    LiftBan
 }

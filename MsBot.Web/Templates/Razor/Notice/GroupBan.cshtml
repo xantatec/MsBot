@@ -1,0 +1,38 @@
+﻿@inherits TemplatePage<MsBotModel<GroupBanNoticeReqVo>>
+@using MsBot.Implementation.API;
+@using MsBot.Implementation.MySql;
+@using MsBot.Implementation.Template;
+@using MsBot.Implementation.Template.Razor;
+@using MsBot.Infrastructure;
+@using MsBot.Vo.API;
+@using MsBot.Vo.Events.Message;
+@using Dapper;
+@using System.Threading;
+@using MsBot.Vo.Events.Notice;
+@functions {
+    public class Msg
+    {
+        public long Id { get; set; }
+        public string Answer { get; set; }
+        public string Question { get; set; }
+        public string CreateId { get; set; }
+        public string Link { get; set; }
+    }
+}
+@{
+    var request = Model.Request;
+    var config = Model.Config;
+
+    if (request.SubType == GroupBanNoticeSubType.Ban)
+    {
+        var groupMsg = new GroupMessageReqVo { GroupId = request.GroupId, AutoEscape = false };
+        groupMsg.Message = "[CQ:image,file=img/ban.jpg] \r\n恭喜这个逼喜提" + (request.Duration / 60f).ToString("#.##") + "分";
+        APIHelper.Instance.SendGroupMsg(groupMsg);
+    }
+    else if(request.SubType == GroupBanNoticeSubType.LiftBan)
+    {
+        var groupMsg = new GroupMessageReqVo { GroupId = request.GroupId, AutoEscape = false };
+        groupMsg.Message = "[CQ:image,file=img/ban.jpg] \r\n恭喜这个逼喜提前解封";
+        APIHelper.Instance.SendGroupMsg(groupMsg);
+    }
+}

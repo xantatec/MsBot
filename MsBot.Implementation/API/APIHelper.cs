@@ -38,5 +38,15 @@ namespace MsBot.Implementation.API
             var strResult = RequestHelper.Instance.WebRequest(url, "POST", parameter: groupMsg);
             return SerializerHelper.Instance.JsonDeserialize<Result<List<GroupMemberRspVo>>>(strResult);
         }
+
+        /// <summary>
+        /// 获取群成员信息
+        /// </summary>
+        public Result<GroupMemberRspVo> GetGroupMember(GroupMemberReqVo groupMember)
+        {
+            var url = CQ_HTTP_URL + "/get_group_member_info";
+            var strResult = RequestHelper.Instance.WebRequest(url, "POST", parameter: groupMember);
+            return SerializerHelper.Instance.JsonDeserialize<Result<GroupMemberRspVo>>(strResult);
+        }
     }
 }

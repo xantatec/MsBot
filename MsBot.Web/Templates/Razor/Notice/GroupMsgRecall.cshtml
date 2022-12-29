@@ -1,0 +1,45 @@
+﻿@inherits TemplatePage<MsBotModel<GroupMsgRecallNoticeReqVo>>
+@using MsBot.Implementation.API;
+@using MsBot.Implementation.MySql;
+@using MsBot.Implementation.Template;
+@using MsBot.Implementation.Template.Razor;
+@using MsBot.Infrastructure;
+@using MsBot.Vo.API;
+@using MsBot.Vo.Events.Message;
+@using Dapper;
+@using System.Threading;
+@using MsBot.Vo.Events.Notice;
+@functions {
+    public class Msg
+    {
+        public long Id { get; set; }
+        public string Answer { get; set; }
+        public string Question { get; set; }
+        public string CreateId { get; set; }
+        public string Link { get; set; }
+    }
+}
+@{
+    var request = Model.Request;
+    var config = Model.Config;
+
+    var memberInfo = APIHelper.Instance.GetGroupMember(new GroupMemberReqVo
+    {
+        GroupId = request.GroupId,
+        UserId = request.OperatorId
+    });
+
+    var message = "有人撤回了消息，已记录消息ID：" + request.MessageId;
+    if (memberInfo != null && memberInfo.Data != null)
+    {
+        if (memberInfo.Data.UserId == 337497085 || string.IsNullOrEmpty(memberInfo.Data.Title))
+        {
+            message += "快来人呐！本群有称号的人自己撤回消息啦！";
+        }
+    }
+    //，我有理由怀疑可能是涩涩内容，已私聊给头哥具体消息内容
+
+    var groupMsg = new GroupMessageReqVo { GroupId = request.GroupId, AutoEscape = false };
+    groupMsg.Message = message;
+    APIHelper.Instance.SendGroupMsg(groupMsg);
+}

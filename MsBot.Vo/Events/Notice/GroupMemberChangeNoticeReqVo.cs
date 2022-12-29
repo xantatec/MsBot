@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MsBot.Vo.Plugins;
+using Newtonsoft.Json;
 
 namespace MsBot.Vo.Events.Notice;
 
@@ -21,6 +22,12 @@ public class GroupMemberChangeNoticeReqVo : NoticeReqVo
     /// </summary>
     [JsonProperty("operator_id")]
     public long OperatorId { get; set; }
+
+    /// <summary>
+    /// 事件子类型
+    /// </summary>
+    [JsonProperty("sub_type"), JsonConverter(typeof(MsBotEnumConverter))]
+    public GroupMemberChangeNoticeSubType SubType { get; set; }
 
     public override string Template => "GroupMemberChange";
 }

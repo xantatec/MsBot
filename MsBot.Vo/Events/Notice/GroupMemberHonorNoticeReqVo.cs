@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MsBot.Vo.Plugins;
+using Newtonsoft.Json;
 
 namespace MsBot.Vo.Events.Notice;
 
@@ -22,8 +23,8 @@ public class GroupMemberHonorNoticeReqVo : NoticeReqVo
     /// <summary>
     /// 荣誉类型
     /// </summary>
-    [JsonProperty("honor_type")]
-    public long HonorType { get; set; }
+    [JsonProperty("honor_type"), JsonConverter(typeof(MsBotEnumConverter))]
+    public HonorType HonorType { get; set; }
 
     /// <summary>
     /// 提示类型

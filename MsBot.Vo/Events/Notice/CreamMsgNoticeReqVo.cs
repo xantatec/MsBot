@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MsBot.Vo.Plugins;
+using Newtonsoft.Json;
 
 namespace MsBot.Vo.Events.Notice;
 
@@ -16,7 +17,7 @@ public class CreamMsgNoticeReqVo: NoticeReqVo
     /// <summary>
     /// 发送者 QQ 号
     /// </summary>
-    [JsonProperty("sub_type")]
+    [JsonProperty("sub_type"), JsonConverter(typeof(MsBotEnumConverter))]
     public CreamMsgSubType SubType { get; set; }
 
     /// <summary>

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MsBot.Vo.Plugins;
+using Newtonsoft.Json;
 
 namespace MsBot.Vo.Events.Notice;
 
@@ -10,7 +11,7 @@ public abstract class NoticeReqVo : BaseReqVo
     /// <summary>
     /// 通知类型
     /// </summary>
-    [JsonProperty("notice_type")]
+    [JsonProperty("notice_type"), JsonConverter(typeof(MsBotEnumConverter))]
     public NoticeTypeVo NoticeType { get; set; }
 }
 

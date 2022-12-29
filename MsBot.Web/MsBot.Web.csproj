@@ -10,6 +10,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Content Remove="Templates\Razor\Message\GroupMsg - Copy.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\T.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_Calc.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_DeleteQuestion.cshtml" />
@@ -25,9 +26,24 @@
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_WuShiCalc.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_ZhanBu.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_Zou.cshtml" />
+	  <Content Remove="Templates\Razor\Notice\GroupBan.cshtml" />
+	  <Content Remove="Templates\Razor\Notice\GroupMemberChange.cshtml" />
+	  <Content Remove="Templates\Razor\Notice\GroupMsgRecall.cshtml" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Include="Templates\Razor\Notice\GroupMsgRecall.cshtml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="Templates\Razor\Notice\GroupBan.cshtml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="Templates\Razor\Notice\GroupMemberChange.cshtml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="Templates\Razor\Notice\GroupAdmin.cshtml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Include="Templates\Razor\Message\GroupMsg.cshtml">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
