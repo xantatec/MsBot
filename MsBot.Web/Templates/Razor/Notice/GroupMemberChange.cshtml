@@ -23,24 +23,37 @@
 @{
     var request = Model.Request;
     var config = Model.Config;
-    if (request.SubType == GroupMemberChangeNoticeSubType.Leave)
+    if(request.SubType == GroupMemberChangeNoticeSubType.Leave)
     {
         var groupMsg = new GroupMessageReqVo { GroupId = request.GroupId, AutoEscape = false };
         groupMsg.Message = "[CQ:image,file=img/leave.png]\r\n退出QQ：" + request.UserId;
         APIHelper.Instance.SendGroupMsg(groupMsg);
     }
-    else if (request.SubType == GroupMemberChangeNoticeSubType.Approve)
+    else if(request.SubType == GroupMemberChangeNoticeSubType.Approve || request.SubType == GroupMemberChangeNoticeSubType.Invite)
     {
-        using (var conn = DbHelper.Instance.GetConnection(Model.Config.ConnectionString))
+        if(request.GroupId == 589902955)
         {
-            var list = conn.Query<Msg>("SELECT * FROM msg WHERE question = @Question", new { Question = "固定回复welcome" }).ToList();
-            var random = RandomHelper.Instance.RandomInt(list.Count - 1);
             var groupMsg = new GroupMessageReqVo { GroupId = request.GroupId, AutoEscape = false };
-            groupMsg.Message = list[random].Answer;
+            groupMsg.Message = @"
+欢迎新大佬，
+请截图完整的联盟首页界面，没有联盟的请截图登录角色界面，如下图所示。
+另外，家族对外观有一定要求，太难看将审核不通过。
+[CQ:image,file=save/6a6f38509d508d3879eb8421b8641148]";
             APIHelper.Instance.SendGroupMsg(groupMsg);
         }
+        else
+        {
+            using(var conn = DbHelper.Instance.GetConnection(Model.Config.ConnectionString))
+            {
+                var list = conn.Query<Msg>("SELECT * FROM msg WHERE question = @Question", new { Question = "固定回复welcome" }).ToList();
+                var random = RandomHelper.Instance.RandomInt(list.Count - 1);
+                var groupMsg = new GroupMessageReqVo { GroupId = request.GroupId, AutoEscape = false };
+                groupMsg.Message = list[random].Answer;
+                APIHelper.Instance.SendGroupMsg(groupMsg);
+            }
+        }
     }
-    else if (request.SubType == GroupMemberChangeNoticeSubType.Kick)
+    else if(request.SubType == GroupMemberChangeNoticeSubType.Kick)
     {
         var groupMsg = new GroupMessageReqVo { GroupId = request.GroupId, AutoEscape = false };
         groupMsg.Message = "[CQ:image,file=img/leave.png]\r\n被踢QQ：" + request.UserId;

@@ -10,12 +10,12 @@
     private GroupMsgRspVo GetResult()
     {
         var request = Model.Request;
-        var rawMsg = request.RawMessage;
-        var qIndex = rawMsg.IndexOf("问");
+        var rawMsg = request.Message;
+        var qIndex = rawMsg.IndexOf("问") + 1;
         var aIndex = rawMsg.IndexOf(" 答");
-        var theQuestion = rawMsg.Substring(qIndex + 1, aIndex - qIndex);
+        var theQuestion = rawMsg.Substring(qIndex, aIndex - qIndex);
         var answer = rawMsg;
-        while (answer.Contains("[CQ:image"))
+        while(answer.Contains("[CQ:image"))
         {
             var imgName = SaveImage(rawMsg);
             imgName = "[CQ:image,file=save/" + imgName + "]";
@@ -30,7 +30,7 @@
 
         var ss = "";
         var link = "";
-        if (!ans.Contains("#abcde#"))
+        if(!ans.Contains("#abcde#"))
             ss = ans;
         else
         {
@@ -39,7 +39,7 @@
             link = ans.Substring(sIndex + 7);
         }
 
-        using (var conn = DbHelper.Instance.GetConnection(Model.Config.ConnectionString))
+        using(var conn = DbHelper.Instance.GetConnection(Model.Config.ConnectionString))
         {
             conn.Execute("INSERT INTO msg(answer, question, create_id, link)VALUES(@Answer, @Question, @CreateId, @Link)", new
             {
@@ -61,7 +61,7 @@
         var e = rawMsg.IndexOf(",url=") - 6;
         var imageName = rawMsg.Substring(s, e - s);
         var imageUrl = rawMsg.Substring(qIndex, aIndex - qIndex);
-        RequestHelper.Instance.DownloadFile(imageUrl, Model.Config.ImageFolder, imageName);
+        RequestHelper.Instance.DownloadFile(imageUrl, Model.Config.ImageFolder + "/save", imageName);
         return imageName;
     }
 }

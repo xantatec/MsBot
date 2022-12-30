@@ -19,9 +19,5 @@ namespace MsBot.Infrastructure
         /// 实例
         /// </summary>
         public static CacheHelper Instance => _instance ??= new CacheHelper();
-
-        public void Add<T>(T obj,)
-        { 
-        }
     }
 }

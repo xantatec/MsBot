@@ -24,22 +24,25 @@
     var config = Model.Config;
 
     var memberInfo = APIHelper.Instance.GetGroupMember(new GroupMemberReqVo
-    {
-        GroupId = request.GroupId,
-        UserId = request.OperatorId
-    });
+            {
+                GroupId = request.GroupId,
+                UserId = request.OperatorId
+            });
 
-    var message = "有人撤回了消息，已记录消息ID：" + request.MessageId;
-    if (memberInfo != null && memberInfo.Data != null)
+    if(memberInfo != null && memberInfo.Data != null)
     {
-        if (memberInfo.Data.UserId == 337497085)
-            message += "\r\n快来人呐！慕容王撤回消息啦！我有理由怀疑可能是涩涩内容，已私聊给头哥具体消息内容";
+        var message = "";
+        if(memberInfo.Data.UserId == 337497085)
+            message += "快来人呐！慕容王撤回消息啦（" + request.MessageId + "）！我有理由怀疑可能是涩涩内容，已私聊给头哥具体消息内容";
 
         if(memberInfo.Data.UserId == 415651015)
-            message += "\r\n桶子撤回消息啦！我有理由怀疑可能是涩涩内容，已私聊给头哥具体消息内容";
-    }
+            message += "桶子撤回消息啦（" + request.MessageId + "）！我有理由怀疑可能是涩涩内容，已私聊给头哥具体消息内容";
 
-    var groupMsg = new GroupMessageReqVo { GroupId = request.GroupId, AutoEscape = false };
-    groupMsg.Message = message;
-    APIHelper.Instance.SendGroupMsg(groupMsg);
+        if(!string.IsNullOrEmpty(message))
+        {
+            var groupMsg = new GroupMessageReqVo { GroupId = request.GroupId, AutoEscape = false };
+            groupMsg.Message = message;
+            APIHelper.Instance.SendGroupMsg(groupMsg);
+        }
+    }
 }
