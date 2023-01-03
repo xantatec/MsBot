@@ -10,7 +10,7 @@
     private GroupMsgRspVo GetResult()
     {
         var request = Model.Request;
-        var rawMsg = request.RawMessage;
+        var rawMsg = request.Message;
         var qIndex = rawMsg.IndexOf("问");
         var aIndex = rawMsg.IndexOf(" 答");
         var theQuestion = rawMsg.Substring(qIndex + 1, aIndex - qIndex);
