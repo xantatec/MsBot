@@ -1,8 +1,183 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
-
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="row">
+    <div class="col-12 col-xl-12 stretch-card">
+        <div class="row flex-grow-1">
+            <div class="col-md-4 grid-margin stretch-card">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-baseline">
+                            <h6 class="card-title mb-0">当日消息</h6>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 col-md-12 col-xl-5">
+                                <h3 class="mb-2">3,897</h3>
+                                <div class="d-flex align-items-baseline">
+                                    <p class="text-success">
+                                        <span>+3.3%</span>
+                                        <i data-feather="arrow-up" class="icon-sm mb-1"></i>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-12 col-xl-7">
+                                <div id="dayMsgChart" class="mt-md-3 mt-xl-0"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 grid-margin stretch-card">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-baseline">
+                            <h6 class="card-title mb-0">当月消息</h6>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 col-md-12 col-xl-5">
+                                <h3 class="mb-2">35,084</h3>
+                                <div class="d-flex align-items-baseline">
+                                    <p class="text-danger">
+                                        <span>-2.8%</span>
+                                        <i data-feather="arrow-down" class="icon-sm mb-1"></i>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-12 col-xl-7">
+                                <div id="monthMsgChart" class="mt-md-3 mt-xl-0"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 grid-margin stretch-card">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-baseline">
+                            <h6 class="card-title mb-0">当年消息</h6>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 col-md-12 col-xl-5">
+                                <h3 class="mb-2">89.87%</h3>
+                                <div class="d-flex align-items-baseline">
+                                    <p class="text-success">
+                                        <span>+2.8%</span>
+                                        <i data-feather="arrow-up" class="icon-sm mb-1"></i>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-12 col-xl-7">
+                                <div id="yearMsgChart" class="mt-md-3 mt-xl-0"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+@section scripts{
+    <script src="/assets/vendors/jquery.flot/jquery.flot.js"></script>
+    <script src="/assets/vendors/jquery.flot/jquery.flot.resize.js"></script>
+    <script src="/assets/vendors/apexcharts/apexcharts.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            var colors = {
+                primary: "#6571ff",
+                secondary: "#7987a1",
+                success: "#05a34a",
+                info: "#66d1d1",
+                warning: "#fbbc06",
+                danger: "#ff3366",
+                light: "#e9ecef",
+                dark: "#060c17",
+                muted: "#7987a1",
+                gridBorder: "rgba(77, 138, 240, .15)",
+                bodyColor: "#000",
+                cardBg: "#fff"
+            }
+
+            var fontFamily = "'Roboto', Helvetica, sans-serif"
+
+            var options1 = {
+                chart: {
+                    type: "line",
+                    height: 60,
+                    sparkline: {
+                        enabled: !0
+                    }
+                },
+                series: [{
+                    name: '',
+                    data: [3844, 3855, 3841, 3867, 3822, 3843, 3821, 3841, 3856, 3827, 3843]
+                }],
+                xaxis: {
+                    type: 'datetime',
+                    categories: ["Jan 01 2022", "Jan 02 2022", "Jan 03 2022", "Jan 04 2022", "Jan 05 2022", "Jan 06 2022", "Jan 07 2022", "Jan 08 2022", "Jan 09 2022", "Jan 10 2022", "Jan 11 2022",],
+                },
+                stroke: {
+                    width: 2,
+                    curve: "smooth"
+                },
+                markers: {
+                    size: 0
+                },
+                colors: [colors.primary],
+            };
+            new ApexCharts(document.querySelector("#dayMsgChart"), options1).render();
+
+            var options2 = {
+                chart: {
+                    type: "bar",
+                    height: 60,
+                    sparkline: {
+                        enabled: !0
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        borderRadius: 2,
+                        columnWidth: "60%"
+                    }
+                },
+                colors: [colors.primary],
+                series: [{
+                    name: '',
+                    data: [36, 77, 52, 90, 74, 35, 55, 23, 47, 10, 63]
+                }],
+                xaxis: {
+                    type: 'datetime',
+                    categories: ["Jan 01 2022", "Jan 02 2022", "Jan 03 2022", "Jan 04 2022", "Jan 05 2022", "Jan 06 2022", "Jan 07 2022", "Jan 08 2022", "Jan 09 2022", "Jan 10 2022", "Jan 11 2022",],
+                }
+            };
+            new ApexCharts(document.querySelector("#monthMsgChart"), options2).render();
+
+            var options3 = {
+                chart: {
+                    type: "line",
+                    height: 60,
+                    sparkline: {
+                        enabled: !0
+                    }
+                },
+                series: [{
+                    name: '',
+                    data: [41, 45, 44, 46, 52, 54, 43, 74, 82, 82, 89]
+                }],
+                xaxis: {
+                    type: 'datetime',
+                    categories: ["Jan 01 2022", "Jan 02 2022", "Jan 03 2022", "Jan 04 2022", "Jan 05 2022", "Jan 06 2022", "Jan 07 2022", "Jan 08 2022", "Jan 09 2022", "Jan 10 2022", "Jan 11 2022",],
+                },
+                stroke: {
+                    width: 2,
+                    curve: "smooth"
+                },
+                markers: {
+                    size: 0
+                },
+                colors: [colors.primary],
+            };
+            new ApexCharts(document.querySelector("#yearMsgChart"), options3).render();
+        });
+    </script>
+}
