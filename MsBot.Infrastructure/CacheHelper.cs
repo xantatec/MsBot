@@ -25,6 +25,11 @@ namespace MsBot.Infrastructure
             LookupCache.Set(key, obj);
         }
 
+        public void Set<T>(object key, T obj, int expire)
+        {
+            LookupCache.Set(key, obj, TimeSpan.FromSeconds(expire));
+        }
+
         public bool TryGet<T>(object key, out T value)
         {
             return LookupCache.TryGetValue<T>(key, out value);

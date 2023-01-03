@@ -7,7 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="7.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MsBot.Domain\MsBot.Domain.csproj" />
+    <ProjectReference Include="..\MsBot.Implementation\MsBot.Implementation.csproj" />
+    <ProjectReference Include="..\MsBot.Infrastructure\MsBot.Infrastructure.csproj" />
+    <ProjectReference Include="..\MsBot.Vo\MsBot.Vo.csproj" />
   </ItemGroup>
 
 </Project>

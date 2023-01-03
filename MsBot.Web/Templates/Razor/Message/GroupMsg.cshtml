@@ -109,7 +109,16 @@
         var config = Model.Config;
         var rawMsg = request.RawMessage;
 
-        if (!rawMsg.StartsWith(config.BotName))
+        //1MIN一个计数，缓存30MIN
+        var dt = DateTime.Now;
+        var cacheGpMsgKey = string.Format("_GROUP_MSG_{0}_{1}", request.GroupId, dt.ToString("HHmm"));
+
+        //群消息缓存设计
+        CacheHelper.Instance.TryGet<int>(cacheGpMsgKey, out var groupMsgCount);
+        groupMsgCount += 1;
+        CacheHelper.Instance.Set(cacheGpMsgKey, groupMsgCount, 1 * 60);
+
+        if(!rawMsg.StartsWith(config.BotName))
             return;
 
         if(rawMsg.Contains("逆推"))

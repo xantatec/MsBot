@@ -1,7 +1,13 @@
+using Microsoft.Extensions.Options;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
+builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation().AddNewtonsoftJson(opt =>
+{
+    opt.UseMemberCasing();
+    opt.SerializerSettings.DateFormatString = "yyyy-MM-dd HH:mm:ss";
+});
 
 var app = builder.Build();
 

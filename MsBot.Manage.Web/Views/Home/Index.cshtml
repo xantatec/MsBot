@@ -75,12 +75,33 @@
             </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title">群消息实时</h6>
+                    <div class="flot-chart-wrapper">
+                        <div class="flot-chart" id="flotRealTime"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @section scripts{
-    <script src="/assets/vendors/jquery.flot/jquery.flot.js"></script>
-    <script src="/assets/vendors/jquery.flot/jquery.flot.resize.js"></script>
     <script src="/assets/vendors/apexcharts/apexcharts.min.js"></script>
+    <script language="javascript" type="text/javascript" src="/assets/vendors/jquery.flot/jquery.canvaswrapper.js"></script>
+    <script language="javascript" type="text/javascript" src="/assets/vendors/jquery.flot/jquery.canvaswrapper.js"></script>
+    <script language="javascript" type="text/javascript" src="/assets/vendors/jquery.flot/jquery.colorhelpers.js"></script>
+    <script language="javascript" type="text/javascript" src="/assets/vendors/jquery.flot/jquery.flot.js"></script>
+    <script language="javascript" type="text/javascript" src="/assets/vendors/jquery.flot/jquery.flot.saturated.js"></script>
+    <script language="javascript" type="text/javascript" src="/assets/vendors/jquery.flot/jquery.flot.browser.js"></script>
+    <script language="javascript" type="text/javascript" src="/assets/vendors/jquery.flot/jquery.flot.drawSeries.js"></script>
+    <script language="javascript" type="text/javascript" src="/assets/vendors/jquery.flot/jquery.flot.uiConstants.js"></script>
+    <script language="javascript" type="text/javascript" src="/assets/vendors/jquery.flot/jquery.flot.categories.js"></script>
     <script type="text/javascript">
+        var plot = null;
+        var data = [], totalPoints = 300;
         $(function () {
             var colors = {
                 primary: "#6571ff",
@@ -178,6 +199,41 @@
                 colors: [colors.primary],
             };
             new ApexCharts(document.querySelector("#yearMsgChart"), options3).render();
+
+            var tttt = [["01:39", 41], ["01:38", 1], ["01:37", 94], ["01:36", 99], ["01:35", 22], ["01:34", 26], ["01:33", 71], ["01:32", 86], ["01:31", 80], ["01:30", 17], ["01:29", 31], ["01:28", 26], ["01:27", 73], ["01:26", 15], ["01:25", 92], ["01:24", 25], ["01:23", 71], ["01:22", 40], ["01:21", 1], ["01:20", 91], ["01:19", 71], ["01:18", 67], ["01:17", 19], ["01:16", 68], ["01:15", 3], ["01:14", 1], ["01:13", 58], ["01:12", 88], ["01:11", 86], ["01:10", 53], ["01:09", 86]];
+
+            plot = $.plot("#flotRealTime", [], {
+                series: {
+                    lines: {
+                        show: true,
+                    }
+                },
+                xaxis: {
+                    mode: "categories",
+                    gridLines: false
+                }
+            });
+
+            function update() {
+                $.ajax({
+                    url: "/Home/GetRealTimeMsgCount?GroupId=273087282",
+                    dataType: "JSON",
+                    type: "GET",
+                    async: false,
+                    success: function (response) {
+                        var t = response.Result;
+                        var d = [];
+                        for (var i = 0; i < t.length; i++) {
+                            var a = t[i];
+                            d.push([a.Key, a.Value]);
+                        }
+                        plot.setData([d]);
+                        plot.setupGrid(true);
+                        plot.draw();
+                    }
+                });
+            }
+            setInterval(update, 2000);
         });
     </script>
 }

@@ -17,6 +17,8 @@ namespace MsBot.Implementation.MySql
 
         public virtual DbSet<MsgAggregateRoot> Msgs { get; set; }
 
+        public virtual DbSet<MsgSummaryAggregateRoot> MsgSummaries { get; set; }
+
         #endregion
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
