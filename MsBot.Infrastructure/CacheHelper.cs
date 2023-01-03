@@ -20,8 +20,14 @@ namespace MsBot.Infrastructure
         /// </summary>
         public static CacheHelper Instance => _instance ??= new CacheHelper();
 
-        public void Add<T>(T obj,)
-        { 
+        public void Set<T>(object key, T obj)
+        {
+            LookupCache.Set(key, obj);
+        }
+
+        public bool TryGet<T>(object key, out T value)
+        {
+            return LookupCache.TryGetValue<T>(key, out value);
         }
     }
 }

@@ -3,6 +3,7 @@
 @using MsBot.Implementation.MySql;
 @using MsBot.Implementation.Template;
 @using MsBot.Implementation.Template.Razor;
+@using MsBot.Infrastructure;
 @using MsBot.Vo.API;
 @using MsBot.Vo.Events.Message;
 @using Dapper;
@@ -24,10 +25,193 @@
         public int count { get; set; }
     }
 
+    public class ReReadMsg
+    {
+        /// <summary>
+        /// 消息内容
+        /// </summary>
+        public String RawMsg { get; set; }
+
+        /// <summary>
+        /// 准备复读次数
+        /// </summary>
+        public int ReCount { get; set; }
+
+        /// <summary>
+        /// 已经复读次数
+        /// </summary>
+        public int Count { get; set; }
+
+        /// <summary>
+        /// 累计消息
+        /// </summary>
+        public int MesCount { get; set; }
+
+        /// <summary>
+        /// 发起的人
+        /// </summary>
+        public long StartId { get; set; }
+
+        /// <summary>
+        /// 复读的人
+        /// </summary>
+        public long ReReadId { get; set; }
+    }
+
     private GroupMsgRspVo GetResult()
     {
         var request = Model.Request;
         var config = Model.Config;
+        var rawMsg = request.RawMessage;
+
+        CacheHelper.Instance.TryGet<ReReadMsg>(request.GroupId, out var reReadMsg);
+
+        var isBreakReread = false;
+
+        //图片信息判定是否相同
+        if(reReadMsg != null)
+        {
+            if(reReadMsg.RawMsg.Contains("[CQ:image,file=") && reReadMsg.RawMsg.Contains("[CQ:image,file="))
+            {
+                var name1 = reReadMsg.RawMsg.Substring(reReadMsg.RawMsg.IndexOf("file=") + 5, reReadMsg.RawMsg.IndexOf(",url="));
+                var name2 = rawMsg.Substring(rawMsg.IndexOf("file=") + 5, rawMsg.IndexOf(",url="));
+                isBreakReread = name1 != name2;
+            }
+            else
+            {
+                isBreakReread = reReadMsg.RawMsg != rawMsg;
+            }
+
+            if(!isBreakReread)
+            {
+                if(reReadMsg.ReReadId == request.UserId)
+                    return null;
+            }
+        }
+        using(var conn = DbHelper.Instance.GetConnection(Model.Config.ConnectionString))
+        {
+
+            if(reReadMsg == null || isBreakReread)
+            {
+                //第一次打开
+                if(reReadMsg == null)
+                {
+                    reReadMsg = new ReReadMsg();
+                    reReadMsg.MesCount = 1;
+                }
+                if(rawMsg.Contains("&#"))
+                    return null;
+
+                //打断复读
+                if(reReadMsg.Count > 1)
+                {
+                    var sql = "SELECT * FROM reread_sentence WHERE group_id = @GroupId LIMIT 0,1";
+                    var rereadSentence = conn.QueryFirstOrDefault<RereadSentence>(sql, new { GroupId = request.GroupId });
+                    if(rereadSentence == null)
+                    {
+                        rereadSentence = new RereadSentence();
+                        rereadSentence.group_id = request.GroupId.ToString();
+                        rereadSentence.message = reReadMsg.RawMsg;
+                        rereadSentence.read_time = reReadMsg.Count;
+                        rereadSentence.user_id = reReadMsg.StartId.ToString();
+
+                        sql = "INSERT INTO reread_sentence(group_id, read_time, message, user_id)VALUES(@group_id, @read_time, @message, @user_id)";
+                        conn.Execute(sql, rereadSentence);
+                    }
+                    else if(reReadMsg.Count > rereadSentence.read_time)
+                    {
+                        sql = "DELETE FROM reread_sentence WHERE id=@Id";
+                        conn.Execute(sql, new { Id = rereadSentence.id });
+                        rereadSentence.group_id = request.GroupId.ToString();
+                        rereadSentence.message = reReadMsg.RawMsg;
+                        rereadSentence.read_time = reReadMsg.Count;
+                        rereadSentence.user_id = reReadMsg.StartId.ToString();
+                        sql = "INSERT INTO reread_sentence(group_id, read_time, message, user_id)VALUES(@group_id, @read_time, @message, @user_id)";
+                        conn.Execute(sql, rereadSentence);
+                    }
+                }
+
+                reReadMsg.Count = 1;
+                reReadMsg.RawMsg = rawMsg;
+                reReadMsg.ReReadId = request.UserId;
+
+                var r = RandomHelper.Instance.RandomInt(2);
+                reReadMsg.ReCount = 2 + r;
+                reReadMsg.StartId = request.UserId;
+                CacheHelper.Instance.Set(request.GroupId, reReadMsg);
+            }
+            else
+            {
+                reReadMsg.Count += 1;
+                reReadMsg.ReReadId = request.UserId;
+                if(reReadMsg.Count > reReadMsg.ReCount)
+                {
+                    reReadMsg.ReCount = 100;
+                    reReadMsg.Count += 1;
+                    APIHelper.Instance.SendGroupMsg(new GroupMessageReqVo
+                        {
+                            GroupId = request.GroupId,
+                            Message = rawMsg == "？" ? "[CQ:image,file=save/7AA9BBE83B63CB529F8EC7B64B14116C]" : reReadMsg.RawMsg
+                        });
+                }
+                CacheHelper.Instance.Set(request.GroupId, reReadMsg);
+                //计算复读
+                var sql = "SELECT * FROM reread_time WHERE group_id = @GroupId AND user_id = @UserId LIMIT 0,1";
+                var rereadTime = conn.QueryFirstOrDefault<RereadTime>(sql, new { GroupId = request.GroupId, UserId = request.UserId });
+                if(rereadTime == null)
+                {
+                    rereadTime = new RereadTime();
+                    rereadTime.count = 1;
+                    rereadTime.group_id = request.GroupId.ToString();
+                    rereadTime.user_id = request.UserId.ToString();
+                    sql = "INSERT INTO reread_time(`count`, group_id, user_id)VALUES(@count, @group_id, @user_id)";
+                    conn.Execute(sql, rereadTime);
+                }
+                else
+                {
+                    sql = "UPDATE reread_time SET `count` = @Count where id = @Id";
+                    conn.Execute(sql, new { Count = rereadTime.count + 1, Id = rereadTime.id });
+                }
+            }
+        }
+
+        if(reReadMsg.MesCount > 300)
+        {
+            reReadMsg.MesCount = 1;
+
+            Random r = new Random();
+            //随机回复auto
+            List<Msg> msgList = msgRepository.findMsgByExtQuestion("随机回复auto");
+            int random = r.nextInt(msgList.size());
+            Msg msg = msgList.get(random);
+            ReplyMsg rm = new ReplyMsg();
+            if(msg.getLink() != null && msg.getLink().equals("at"))
+            {
+                rm.setAt_sender(true);
+            }
+            else if(msg.getLink() != null && msg.getLink().equals("random"))
+            {
+                GroupMsg groupMsg = new GroupMsg();
+                groupMsg.setGroup_id(Long.parseLong(receiveMsg.getGroup_id()));
+                Result <?> groupMember = groupMsgService.getGroupMember(groupMsg);
+                if(groupMember.getStatus().equals("ok"))
+                {
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> data = (List<Map<String, Object>>)groupMember.getData();
+                    random = r.nextInt(data.size());
+                    Map<String, Object> map2 = data.get(random);
+                    groupMsg.setMessage("[CQ:at,qq=" + map2.get("user_id") + "]" + msg.getAnswer());
+                    groupMsgService.sendGroupMsg(groupMsg);
+                    return null;
+                }
+            }
+            rm.setAuto_escape(false);
+            rm.setReply(msg.getAnswer());
+            return rm;
+        }
+
+
+
         var gp = new GroupMessageReqVo { GroupId = request.GroupId };
         var groupMember = APIHelper.Instance.GetGroupMembers(gp);
 
