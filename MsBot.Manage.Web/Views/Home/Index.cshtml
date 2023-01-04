@@ -79,7 +79,7 @@
         <div class="col-xl-12">
             <div class="card">
                 <div class="card-body">
-                    <h6 class="card-title">群消息实时</h6>
+                    <h6 class="card-title">群消息实时[<span id="spRealTime"></span>]</h6>
                     <div class="flot-chart-wrapper">
                         <div class="flot-chart" id="flotRealTime"></div>
                     </div>
@@ -100,6 +100,24 @@
     <script language="javascript" type="text/javascript" src="/assets/vendors/jquery.flot/jquery.flot.uiConstants.js"></script>
     <script language="javascript" type="text/javascript" src="/assets/vendors/jquery.flot/jquery.flot.categories.js"></script>
     <script type="text/javascript">
+        Date.prototype.format = function (fmt) {
+            var o = {
+                "M+": this.getMonth() + 1, //月份
+                "d+": this.getDate(), //日
+                "H+": this.getHours(), //小时
+                "m+": this.getMinutes(), //分
+                "s+": this.getSeconds(), //秒
+                "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+                "S": this.getMilliseconds() //毫秒
+            };
+            if (/(y+)/.test(fmt))
+                fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+            for (var k in o)
+                if (new RegExp("(" + k + ")").test(fmt))
+                    fmt = fmt.replace(RegExp.$1,
+                        (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+            return fmt;
+        };
         var plot = null;
         var data = [], totalPoints = 300;
         $(function () {
@@ -130,11 +148,11 @@
                 },
                 series: [{
                     name: '',
-                    data: [3844, 3855, 3841, 3867, 3822, 3843, 3821, 3841, 3856, 3827, 3843]
+                    data: @Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.TodayMsgCount.Values)
                 }],
                 xaxis: {
                     type: 'datetime',
-                    categories: ["Jan 01 2022", "Jan 02 2022", "Jan 03 2022", "Jan 04 2022", "Jan 05 2022", "Jan 06 2022", "Jan 07 2022", "Jan 08 2022", "Jan 09 2022", "Jan 10 2022", "Jan 11 2022",],
+                    categories: @Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.TodayMsgCount.Categories),
                 },
                 stroke: {
                     width: 2,
@@ -164,11 +182,11 @@
                 colors: [colors.primary],
                 series: [{
                     name: '',
-                    data: [36, 77, 52, 90, 74, 35, 55, 23, 47, 10, 63]
+                    data: @Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.MonthMsgCount.Values)
                 }],
                 xaxis: {
                     type: 'datetime',
-                    categories: ["Jan 01 2022", "Jan 02 2022", "Jan 03 2022", "Jan 04 2022", "Jan 05 2022", "Jan 06 2022", "Jan 07 2022", "Jan 08 2022", "Jan 09 2022", "Jan 10 2022", "Jan 11 2022",],
+                    categories: @Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.MonthMsgCount.Categories),
                 }
             };
             new ApexCharts(document.querySelector("#monthMsgChart"), options2).render();
@@ -183,11 +201,11 @@
                 },
                 series: [{
                     name: '',
-                    data: [41, 45, 44, 46, 52, 54, 43, 74, 82, 82, 89]
+                    data: @Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.YearMsgCount.Values)
                 }],
                 xaxis: {
                     type: 'datetime',
-                    categories: ["Jan 01 2022", "Jan 02 2022", "Jan 03 2022", "Jan 04 2022", "Jan 05 2022", "Jan 06 2022", "Jan 07 2022", "Jan 08 2022", "Jan 09 2022", "Jan 10 2022", "Jan 11 2022",],
+                    categories: @Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.YearMsgCount.Categories),,
                 },
                 stroke: {
                     width: 2,
@@ -200,26 +218,17 @@
             };
             new ApexCharts(document.querySelector("#yearMsgChart"), options3).render();
 
-            var tttt = [["01:39", 41], ["01:38", 1], ["01:37", 94], ["01:36", 99], ["01:35", 22], ["01:34", 26], ["01:33", 71], ["01:32", 86], ["01:31", 80], ["01:30", 17], ["01:29", 31], ["01:28", 26], ["01:27", 73], ["01:26", 15], ["01:25", 92], ["01:24", 25], ["01:23", 71], ["01:22", 40], ["01:21", 1], ["01:20", 91], ["01:19", 71], ["01:18", 67], ["01:17", 19], ["01:16", 68], ["01:15", 3], ["01:14", 1], ["01:13", 58], ["01:12", 88], ["01:11", 86], ["01:10", 53], ["01:09", 86]];
-
-            plot = $.plot("#flotRealTime", [], {
-                series: {
-                    lines: {
-                        show: true,
-                    }
-                },
-                xaxis: {
-                    mode: "categories",
-                    gridLines: false
-                }
-            });
-
             function update() {
                 $.ajax({
                     url: "/Home/GetRealTimeMsgCount?GroupId=273087282",
                     dataType: "JSON",
                     type: "GET",
                     async: false,
+                    beforeSend: function () {
+                        //spRealTime
+                        let time = new Date();
+                        $("#spRealTime").text(time.format("yyyy-MM-dd HH:mm:ss"));
+                    },
                     success: function (response) {
                         var t = response.Result;
                         var d = [];
@@ -227,9 +236,17 @@
                             var a = t[i];
                             d.push([a.Key, a.Value]);
                         }
-                        plot.setData([d]);
-                        plot.setupGrid(true);
-                        plot.draw();
+                        plot = $.plot("#flotRealTime", [d], {
+                            series: {
+                                lines: {
+                                    show: true,
+                                }
+                            },
+                            xaxis: {
+                                mode: "categories",
+                                gridLines: false
+                            }
+                        });
                     }
                 });
             }
