@@ -50,7 +50,7 @@
 
         List<Msg> list = null;
         var rep = new List<Msg>();
-        var command = rawMsg.Substring(config.BotName.Length);
+        var command = rawMsg.Substring(config.BotName.Length).Trim();
         using(var conn = DbHelper.Instance.GetConnection(config.ConnectionString))
         {
             list = conn.Query<Msg>("SELECT * FROM msg WHERE question LIKE CONCAT('%', @Question,'%')", new { Question = command }).ToList();
@@ -219,9 +219,19 @@
 
         //随机回复
         var rnd = RandomHelper.Instance.RandomInt(1, 5);
-        Write(SetResult(new GroupMsgRspVo { Reply = "[CQ:image,file=img/buzhidao" + (rnd < 3 ? ".gif]" : ".png]") }));
+        Write(SetResult(new GroupMsgRspVo { Reply = "[CQ:image,file=img/buzhidao" + (rnd < 3 ? rnd + ".gif]" : rnd + ".png]") }));
     }
 }
 @{
-    GetResult();
+    try
+    {
+        GetResult();
+    }
+    catch(Exception ex)
+    {
+        if(Model.Request.UserId == 337497085)
+            SetResult(new GroupMsgRspVo { Reply = "！！！慕容王想害我！" });
+        else
+            SetResult(new GroupMsgRspVo { Reply = "头哥！报错啦：\r\n" + ex.Message });
+    }
 }

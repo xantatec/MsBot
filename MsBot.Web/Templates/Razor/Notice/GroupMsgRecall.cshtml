@@ -33,10 +33,13 @@
     {
         var message = "";
         if(memberInfo.Data.UserId == 337497085)
-            message += "快来人呐！慕容王撤回消息啦（" + request.MessageId + "）！我有理由怀疑可能是涩涩内容，已私聊给头哥具体消息内容";
-
-        if(memberInfo.Data.UserId == 415651015)
-            message += "桶子撤回消息啦（" + request.MessageId + "）！我有理由怀疑可能是涩涩内容，已私聊给头哥具体消息内容";
+        {
+            var msg = APIHelper.Instance.GetMsg(new MsBot.Vo.API.MsgReqVo { MessageId = request.MessageId });
+            if(msg != null)
+            {
+                message += "打胶王防御插件启动，他撤回的消息是：\r\n" + msg.Data.Message + "\r\n慕容王请速上岛！";
+            }
+        }
 
         if(!string.IsNullOrEmpty(message))
         {
