@@ -4,6 +4,8 @@
     {
         public long Id { get; set; }
 
+        public int GroupId { get; set; }
+
         public int Hour { get; set; }
 
         public int Day { get; set; }

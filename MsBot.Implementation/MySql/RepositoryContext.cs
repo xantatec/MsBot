@@ -23,7 +23,7 @@ namespace MsBot.Implementation.MySql
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseMySQL(_connectionString);
+            optionsBuilder.UseMySql(_connectionString, MySqlServerVersion.Parse("5.6.50"));
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -63,6 +63,7 @@ namespace MsBot.Implementation.MySql
                 entity.HasIndex(e => e.Year, "IDX_year");
 
                 entity.Property(e => e.Id).HasColumnType("bigint(20)");
+                entity.Property(e => e.GroupId).HasColumnType("bigint(20)").HasColumnName("group_id");
                 entity.Property(e => e.Count).HasColumnType("bigint(20)").HasColumnName("count");
                 entity.Property(e => e.Day).HasColumnType("int(11)").HasColumnName("day");
                 entity.Property(e => e.Hour).HasColumnType("int(11)").HasColumnName("hour");

@@ -7,14 +7,14 @@ using System.Diagnostics;
 
 namespace MsBot.Manage.Web.Controllers
 {
-    public class HomeController : Controller
+    public class MemberController : Controller
     {
         private readonly ILogger<HomeController> _logger;
         private readonly MsgSummaryRepository _msgSummaryRepository;
 
         private long GROUP_ID = 1009861616l;
 
-        public HomeController(ILogger<HomeController> logger, MsgSummaryRepository msgSummaryRepository)
+        public MemberController(ILogger<HomeController> logger, MsgSummaryRepository msgSummaryRepository)
         {
             _logger = logger;
             _msgSummaryRepository = msgSummaryRepository;

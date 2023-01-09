@@ -17,6 +17,7 @@
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_FuDu.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_FuDuJiZhouBao.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_GuanWang.cshtml" />
+	  <Content Remove="Templates\Razor\Message\_Groups\_Part_Record.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_Reng.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_RollDian.cshtml" />
 	  <Content Remove="Templates\Razor\Message\_Groups\_Part_SearchMob.cshtml" />
@@ -33,6 +34,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Include="Templates\Razor\Message\_Groups\_Part_Record.cshtml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Include="Templates\Razor\Message\_Groups\_Part_FuDu.cshtml">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
@@ -115,7 +119,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="MySql.EntityFrameworkCore" Version="7.0.0-preview5" />
+		<PackageReference Include="MySql.Data" Version="8.0.31" />
 		<PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
 		<PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta15" />
 	</ItemGroup>

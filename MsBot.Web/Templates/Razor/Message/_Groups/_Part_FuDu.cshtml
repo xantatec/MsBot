@@ -58,6 +58,15 @@
         public long ReReadId { get; set; }
     }
 
+    public class Msg
+    {
+        public long Id { get; set; }
+        public string Answer { get; set; }
+        public string Question { get; set; }
+        public string CreateId { get; set; }
+        public string Link { get; set; }
+    }
+
     private GroupMsgRspVo GetResult()
     {
         var request = Model.Request;
@@ -90,7 +99,6 @@
         }
         using(var conn = DbHelper.Instance.GetConnection(Model.Config.ConnectionString))
         {
-
             if(reReadMsg == null || isBreakReread)
             {
                 //第一次打开
@@ -173,95 +181,44 @@
                     conn.Execute(sql, new { Count = rereadTime.count + 1, Id = rereadTime.id });
                 }
             }
-        }
 
-        if(reReadMsg.MesCount > 300)
-        {
-            reReadMsg.MesCount = 1;
+            if(reReadMsg.MesCount > 300)
+            {
+                reReadMsg.MesCount = 1;
 
-            Random r = new Random();
-            //随机回复auto
-            List<Msg> msgList = msgRepository.findMsgByExtQuestion("随机回复auto");
-            int random = r.nextInt(msgList.size());
-            Msg msg = msgList.get(random);
-            ReplyMsg rm = new ReplyMsg();
-            if(msg.getLink() != null && msg.getLink().equals("at"))
-            {
-                rm.setAt_sender(true);
-            }
-            else if(msg.getLink() != null && msg.getLink().equals("random"))
-            {
-                GroupMsg groupMsg = new GroupMsg();
-                groupMsg.setGroup_id(Long.parseLong(receiveMsg.getGroup_id()));
-                Result <?> groupMember = groupMsgService.getGroupMember(groupMsg);
-                if(groupMember.getStatus().equals("ok"))
+                //随机回复auto
+                var sql = "SELECT * FROM msg WHERE question='随机回复auto'";
+                var msgList = conn.Query<Msg>(sql).ToList();
+                int random = RandomHelper.Instance.RandomInt(msgList.Count);
+                var msg = msgList[random];
+                var rm = new GroupMsgRspVo { AtSender = false };
+                if(!string.IsNullOrEmpty(msg.Link) && msg.Link == "at")
+                    rm.AtSender = true;
+                else if(!string.IsNullOrEmpty(msg.Link) && msg.Link == "random")
                 {
-                    @SuppressWarnings("unchecked")
-                    List<Map<String, Object>> data = (List<Map<String, Object>>)groupMember.getData();
-                    random = r.nextInt(data.size());
-                    Map<String, Object> map2 = data.get(random);
-                    groupMsg.setMessage("[CQ:at,qq=" + map2.get("user_id") + "]" + msg.getAnswer());
-                    groupMsgService.sendGroupMsg(groupMsg);
-                    return null;
+                    var groupMember = APIHelper.Instance.GetGroupMembers(new GroupMessageReqVo
+                        {
+                            GroupId = request.GroupId
+                        });
+                    if(groupMember.Status == "ok")
+                    {
+                        var data = groupMember.Data;
+                        random = RandomHelper.Instance.RandomInt(data.Count);
+                        var map2 = data[random];
+                        APIHelper.Instance.SendGroupMsg(new GroupMessageReqVo
+                            {
+                                GroupId = request.GroupId,
+                                Message = "[CQ:at,qq=" + map2.UserId + "]" + msg.Answer
+                            });
+                        return null;
+                    }
                 }
+                rm.AutoEscape = false;
+                rm.Reply = msg.Answer;
+                return rm;
             }
-            rm.setAuto_escape(false);
-            rm.setReply(msg.getAnswer());
-            return rm;
         }
-
-
-
-        var gp = new GroupMessageReqVo { GroupId = request.GroupId };
-        var groupMember = APIHelper.Instance.GetGroupMembers(gp);
-
-        var data = groupMember.Data;
-
-        var map = new Dictionary<string, string>();
-        foreach(var temp in data)
-        {
-            if(string.IsNullOrEmpty(temp.Card)) //无群名片
-                map.Add(temp.UserId.ToString(), temp.NickName);
-            else //有群名片
-                map.Add(temp.UserId.ToString(), temp.Card);
-        }
-        using(var conn = DbHelper.Instance.GetConnection(Model.Config.ConnectionString))
-        {
-            var message = "本周最长的复读长龙是：\r\n";
-            var sql = "SELECT * FROM reread_sentence WHERE group_id = @GroupId LIMIT 0,1";
-            var rereadSentence = conn.QueryFirstOrDefault<RereadSentence>(sql, new { GroupId = request.GroupId });
-            if(rereadSentence != null)
-            {
-                message += rereadSentence.message + "\r\n" + "此金句出自———————" + map[rereadSentence.user_id] + "\r\n" + "当时被复读机们连续复读了" + rereadSentence.read_time + "次！\r\n";
-                sql = "SELECT * FROM reread_time WHERE group_id = @GroupId ORDER BY COUNT DESC LIMIT 0,3";
-                var list = conn.Query<RereadTime>(sql, new { GroupId = request.GroupId }).ToList();
-                if(list != null && list.Count > 0)
-                {
-                    message += "——————————————————\r\n" + "本周最佳复读机的称号授予" + map[list[0].user_id] + "！\r\n" + "他在过去的一周里疯狂复读" + list[0].count + "次！简直太丧病了。\r\n" + "——————————————————\r\n" + "此外，以下两名成员获得了亚军和季军，也是非常优秀的复读机：\r\n";
-                    if(list.Count > 1)
-                        message += map[list[1].user_id] + " 复读次数：" + list[1].count + "\r\n";
-                    else
-                        message += "虚位以待\r\n";
-
-                    if(list.Count > 2)
-                        message += map[list[2].user_id] + " 复读次数：" + list[2].count + "\r\n";
-                    else
-                        message += "虚位以待\r\n";
-
-                    message += "为了成为最佳复读机，努力复读吧！uwu";
-                }
-                else
-                    message = "owo,本群没有复读机。";
-            }
-            else
-                message = "owo,本群没有复读机";
-
-            return new GroupMsgRspVo
-                {
-                    Reply = message,
-                    AtSender = false
-                };
-        }
+        return null;
     }
 }
 @SetResult(GetResult())

@@ -1,4 +1,5 @@
-﻿@{
+﻿@using Newtonsoft.Json;
+@{
     ViewData["Title"] = "Home Page";
 }
 <div class="row">
@@ -148,12 +149,11 @@
                 },
                 series: [{
                     name: '',
-                    data: @Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.TodayMsgCount.Values)
-                }],
+                    data: @Html.Raw(JsonConvert.SerializeObject(ViewBag.TodayMsgCount.Values))
+                        }],
                 xaxis: {
-                    type: 'datetime',
-                    categories: @Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.TodayMsgCount.Categories),
-                },
+                    categories: @Html.Raw(JsonConvert.SerializeObject(ViewBag.TodayMsgCount.Categories))
+                        },
                 stroke: {
                     width: 2,
                     curve: "smooth"
@@ -182,12 +182,11 @@
                 colors: [colors.primary],
                 series: [{
                     name: '',
-                    data: @Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.MonthMsgCount.Values)
-                }],
+                    data: @Html.Raw(JsonConvert.SerializeObject(ViewBag.MonthMsgCount.Values))
+                        }],
                 xaxis: {
-                    type: 'datetime',
-                    categories: @Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.MonthMsgCount.Categories),
-                }
+                    categories: @Html.Raw(JsonConvert.SerializeObject(ViewBag.MonthMsgCount.Categories))
+                        }
             };
             new ApexCharts(document.querySelector("#monthMsgChart"), options2).render();
 
@@ -201,12 +200,11 @@
                 },
                 series: [{
                     name: '',
-                    data: @Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.YearMsgCount.Values)
-                }],
+                    data: @Html.Raw(JsonConvert.SerializeObject(ViewBag.YearMsgCount.Values))
+                        }],
                 xaxis: {
-                    type: 'datetime',
-                    categories: @Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.YearMsgCount.Categories),,
-                },
+                    categories: @Html.Raw(JsonConvert.SerializeObject(ViewBag.YearMsgCount.Categories))
+                        },
                 stroke: {
                     width: 2,
                     curve: "smooth"
@@ -218,14 +216,29 @@
             };
             new ApexCharts(document.querySelector("#yearMsgChart"), options3).render();
 
+            var realTimeoptions = {
+                series: {
+                    lines: {
+                        show: true,
+                        lineWidth: 2
+                    },
+                    points: {
+                        show: true
+                    }
+                },
+                xaxis: {
+                    tickDecimals: 0,
+                    tickSize: 1
+                }
+            };
+
             function update() {
                 $.ajax({
-                    url: "/Home/GetRealTimeMsgCount?GroupId=273087282",
+                    url: "/Home/GetRealTimeMsgCount?GroupId=1009861616",
                     dataType: "JSON",
                     type: "GET",
                     async: false,
                     beforeSend: function () {
-                        //spRealTime
                         let time = new Date();
                         $("#spRealTime").text(time.format("yyyy-MM-dd HH:mm:ss"));
                     },
@@ -236,21 +249,11 @@
                             var a = t[i];
                             d.push([a.Key, a.Value]);
                         }
-                        plot = $.plot("#flotRealTime", [d], {
-                            series: {
-                                lines: {
-                                    show: true,
-                                }
-                            },
-                            xaxis: {
-                                mode: "categories",
-                                gridLines: false
-                            }
-                        });
+                        $.plot("#flotRealTime", [d], realTimeoptions);
                     }
                 });
             }
-            setInterval(update, 2000);
+            setInterval(update, 5000);
         });
     </script>
 }

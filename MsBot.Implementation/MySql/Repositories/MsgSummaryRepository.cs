@@ -10,9 +10,9 @@ public class MsgSummaryRepository : Repository<MsgSummaryAggregateRoot>
     {
     }
 
-    public Dictionary<int, long> GetTodayCount(int year, int month, int day)
+    public Dictionary<int, long> GetTodayCount(long groupId, int year, int month, int day)
     {
-        var query = MsBotContext.MsgSummaries.Where(s => s.Year == year && s.Month == month && s.Day == day).ToList();
+        var query = MsBotContext.MsgSummaries.Where(s => s.GroupId == groupId && s.Year == year && s.Month == month && s.Day == day).ToList();
         var result = new Dictionary<int, long>();
         foreach(var kv in query)
             result.Add(kv.Hour, kv.Count);
@@ -20,9 +20,9 @@ public class MsgSummaryRepository : Repository<MsgSummaryAggregateRoot>
         return result;
     }
 
-    public Dictionary<int, long> GetMonthCount(int year, int month)
+    public Dictionary<int, long> GetMonthCount(long groupId, int year, int month)
     {
-        var query = MsBotContext.MsgSummaries.Where(s => s.Year == year && s.Month == month).GroupBy(s => s.Day).Select(s => new
+        var query = MsBotContext.MsgSummaries.Where(s => s.GroupId == groupId && s.Year == year && s.Month == month).GroupBy(s => s.Day).Select(s => new
         {
             Day = s.Key,
             Count = s.Sum(ss => ss.Count)
@@ -34,9 +34,9 @@ public class MsgSummaryRepository : Repository<MsgSummaryAggregateRoot>
         return result;
     }
 
-    public Dictionary<int, long> GetYearCount(int year)
+    public Dictionary<int, long> GetYearCount(long groupId, int year)
     {
-        var query = MsBotContext.MsgSummaries.Where(s => s.Year == year).GroupBy(s => s.Month).Select(s => new
+        var query = MsBotContext.MsgSummaries.Where(s => s.GroupId == groupId && s.Year == year).GroupBy(s => s.Month).Select(s => new
         {
             Month = s.Key,
             Count = s.Sum(ss => ss.Count)
