@@ -47,6 +47,29 @@ namespace MsBot.Implementation.MySql
                 entity.Property(e => e.Link).HasMaxLength(1275).HasColumnName("link");
                 entity.Property(e => e.Question).HasMaxLength(255).HasColumnName("question");
             });
+
+            modelBuilder.Entity<MsgSummaryAggregateRoot>(entity =>
+            {
+                entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+                entity.ToTable("msg_summary");
+
+                entity.HasIndex(e => new { e.Day, e.Month, e.Year }, "IDX_day");
+
+                entity.HasIndex(e => new { e.Hour, e.Day, e.Month, e.Year }, "IDX_hour");
+
+                entity.HasIndex(e => new { e.Month, e.Year }, "IDX_month");
+
+                entity.HasIndex(e => e.Year, "IDX_year");
+
+                entity.Property(e => e.Id).HasColumnType("bigint(20)");
+                entity.Property(e => e.Count).HasColumnType("bigint(20)").HasColumnName("count");
+                entity.Property(e => e.Day).HasColumnType("int(11)").HasColumnName("day");
+                entity.Property(e => e.Hour).HasColumnType("int(11)").HasColumnName("hour");
+                entity.Property(e => e.Month).HasColumnType("int(11)").HasColumnName("month");
+                entity.Property(e => e.Year).HasColumnType("int(11)").HasColumnName("year");
+            });
+
         }
     }
 }

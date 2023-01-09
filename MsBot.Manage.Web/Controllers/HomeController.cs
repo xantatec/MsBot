@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MsBot.Implementation.MySql.Repositories;
 using MsBot.Infrastructure;
 using MsBot.Manage.Web.Models;
 using MsBot.Vo.Common;
@@ -10,14 +11,70 @@ namespace MsBot.Manage.Web.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly MsgSummaryRepository _msgSummaryRepository;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, MsgSummaryRepository msgSummaryRepository)
         {
             _logger = logger;
+            _msgSummaryRepository = msgSummaryRepository;
         }
 
         public IActionResult Index()
         {
+            var dt = DateTime.Now;
+            #region Today
+
+            var todayMsgCount = _msgSummaryRepository.GetTodayCount(dt.Year, dt.Month, dt.Day);
+            var today = new MsgChartData<long>
+            {
+                Categories = new List<string>(),
+                Values = new List<long>()
+            };
+            for(var i = 0; i < 24; i++)
+            {
+                today.Categories.Add(i.ToString());
+                today.Values.Add(todayMsgCount.ContainsKey(i) ? todayMsgCount[i] : 0);
+            }
+
+            ViewBag.TodayMsgCount = today;
+
+            #endregion
+
+            #region Month
+
+            var monthMsgCount = _msgSummaryRepository.GetMonthCount(dt.Year, dt.Month);
+            var month = new MsgChartData<long>
+            {
+                Categories = new List<string>(),
+                Values = new List<long>()
+            };
+            for(var i = 1; i <= DateTime.DaysInMonth(dt.Year, dt.Month); i++)
+            {
+                month.Categories.Add(i.ToString());
+                month.Values.Add(monthMsgCount.ContainsKey(i) ? monthMsgCount[i] : 0);
+            }
+
+            ViewBag.MonthMsgCount = month;
+
+            #endregion
+
+            #region Month
+
+            var yearMsgCount = _msgSummaryRepository.GetYearCount(dt.Year);
+            var year = new MsgChartData<long>
+            {
+                Categories = new List<string>(),
+                Values = new List<long>()
+            };
+            for(var i = 1; i <= 12; i++)
+            {
+                year.Categories.Add(i.ToString());
+                year.Values.Add(yearMsgCount.ContainsKey(i) ? yearMsgCount[i] : 0);
+            }
+
+            ViewBag.YearMsgCount = year;
+            #endregion
+
             return View();
         }
 
@@ -31,11 +88,10 @@ namespace MsBot.Manage.Web.Controllers
             var dic = new List<KeyValuePair<string, int>>();
             do
             {
-                ct = ct.AddMinutes(-1);
-
-                var cacheGpMsgKey = string.Format("_GROUP_MSG_{0}_{1}", groupId, ct.ToString("mmss"));
+                var cacheGpMsgKey = string.Format("_GROUP_MSG_{0}_{1}", groupId, ct.ToString("HHmm"));
                 CacheHelper.Instance.TryGet<int>(cacheGpMsgKey, out var groupMsgCount);
-                dic.Add(new KeyValuePair<string, int>(ct.ToString("mm:ss"), RandomHelper.Instance.RandomInt(100)));
+                dic.Add(new KeyValuePair<string, int>(ct.ToString("HH:mm"), groupMsgCount));
+                ct = ct.AddMinutes(-1);
             }
             while(ct >= min);
             dic.Reverse();
