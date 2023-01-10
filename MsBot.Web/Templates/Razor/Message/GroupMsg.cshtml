@@ -223,15 +223,5 @@
     }
 }
 @{
-    try
-    {
-        GetResult();
-    }
-    catch(Exception ex)
-    {
-        if(Model.Request.UserId == 337497085)
-            SetResult(new GroupMsgRspVo { Reply = "！！！慕容王想害我！" });
-        else
-            SetResult(new GroupMsgRspVo { Reply = "头哥！报错啦：\r\n" + ex.Message });
-    }
+    GetResult();
 }

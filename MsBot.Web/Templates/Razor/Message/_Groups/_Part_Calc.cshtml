@@ -10,14 +10,24 @@
     {
         var request = Model.Request;
         var config = Model.Config;
-        var rawMsg = request.RawMessage;
-        rawMsg = rawMsg.Replace("×", "*");
-        rawMsg = rawMsg.Replace("÷", "/");
-        var context = new ExpressionContext();
-        context.Imports.AddType(typeof(Math));
-        var eDynamic = context.CompileDynamic(rawMsg.Substring(rawMsg.IndexOf(config.BotName) + config.BotName.Length));
-        var result = eDynamic.Evaluate();
-        return new GroupMsgRspVo { Reply = result.ToString(), AtSender = true };
+        try
+        {
+            var rawMsg = request.RawMessage;
+            rawMsg = rawMsg.Replace("×", "*");
+            rawMsg = rawMsg.Replace("÷", "/");
+            var context = new ExpressionContext();
+            context.Imports.AddType(typeof(Math));
+            var eDynamic = context.CompileDynamic(rawMsg.Substring(rawMsg.IndexOf(config.BotName) + config.BotName.Length));
+            var result = eDynamic.Evaluate();
+            return new GroupMsgRspVo { Reply = result.ToString(), AtSender = true };
+        }
+        catch(Exception ex)
+        {
+            if(request.UserId == 337497085)
+                return new GroupMsgRspVo { Reply = "！！！慕容王想害我！" };
+            else
+                return new GroupMsgRspVo { Reply = "哼哼，想害我？！" };
+        }
     }
 }
 @SetResult(GetResult())
